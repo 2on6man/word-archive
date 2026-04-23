@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Archive - 한/영 각주 아카이브</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text: #1a202c;
+      --text-secondary: #64748b;
+      --accent: #2563eb;
+      --accent-light: #dbeafe;
+      --ko-accent: #4f46e5;
+      --en-accent: #0891b2;
+      --copy-success: #16a34a;
+      --highlight: #fef08a;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+      color: white;
+      padding: 2.5rem 1rem 2rem;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .header p {
+      font-size: 0.9rem;
+      opacity: 0.85;
+    }
+
+    .search-container {
+      max-width: 720px;
+      margin: -1.5rem auto 0;
+      padding: 0 1rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      padding: 0.5rem 1rem;
+      gap: 0.75rem;
+    }
+
+    .search-icon {
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .search-box input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      padding: 0.75rem 0;
+      background: transparent;
+      color: var(--text);
+    }
+
+    .search-box input::placeholder { color: var(--text-secondary); }
+
+    .search-clear {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-secondary);
+      padding: 4px;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .search-clear:hover { background: var(--bg); }
+    .search-clear.visible { display: flex; }
+
+    .controls {
+      max-width: 720px;
+      margin: 1rem auto 0;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .result-count {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .filter-btn {
+      padding: 0.35rem 0.85rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      font-size: 0.8rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+    }
+
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    .card-list {
+      max-width: 720px;
+      margin: 1rem auto 2rem;
+      padding: 0 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      transition: box-shadow 0.15s;
+    }
+
+    .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+    .card-row {
+      display: flex;
+      align-items: stretch;
+    }
+
+    .lang-label {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 0.4rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      flex-shrink: 0;
+      min-width: 28px;
+    }
+
+    .lang-label.ko { background: #eef2ff; color: var(--ko-accent); }
+    .lang-label.en { background: #ecfeff; color: var(--en-accent); }
+
+    .card-content {
+      flex: 1;
+      padding: 0.85rem 1rem;
+      min-width: 0;
+    }
+
+    .term-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .term {
+      font-weight: 700;
+      font-size: 1rem;
+      word-break: break-word;
+    }
+
+    .copy-btn {
+      flex-shrink: 0;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .copy-btn.copied {
+      border-color: var(--copy-success);
+      color: var(--copy-success);
+      background: #f0fdf4;
+    }
+
+    .desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      word-break: keep-all;
+    }
+
+    .card-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0;
+    }
+
+    mark {
+      background: var(--highlight);
+      color: inherit;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--text-secondary);
+    }
+
+    .empty-state svg { margin-bottom: 1rem; opacity: 0.4; }
+    .empty-state p { font-size: 0.95rem; }
+
+    .footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1e293b;
+      color: white;
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 600px) {
+      .header h1 { font-size: 1.35rem; }
+      .card-content { padding: 0.7rem 0.85rem; }
+      .term { font-size: 0.92rem; }
+      .desc { font-size: 0.82rem; }
+      .controls { flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Word Archive</h1>
+  <p>한/영 각주 아카이브</p>
+</div>
+
+<div class="search-container">
+  <div class="search-box">
+    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="용어 또는 설명 검색... (한글/영문)" autocomplete="off">
+    <button class="search-clear" id="clearBtn" aria-label="검색어 지우기">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="controls">
+  <span class="result-count" id="resultCount"></span>
+  <div class="filter-buttons">
+    <button class="filter-btn active" data-filter="all">전체</button>
+    <button class="filter-btn" data-filter="ko">한글</button>
+    <button class="filter-btn" data-filter="en">영문</button>
+  </div>
+</div>
+
+<div class="card-list" id="cardList"></div>
+
+<div class="footer">
+  <p>Word Archive &copy; 2026 Nara Space &mdash; 텍스트를 클릭하여 복사할 수 있습니다.</p>
+</div>
+
+<div class="toast" id="toast">클립보드에 복사되었습니다</div>
+
+<script>
+const DATA = [
+  {"id":1,"ko_term":"정규식생지수(NDVI)","ko_desc":"위성영상에서 식생이 반사하는 빛의 특성을 이용해 식물의 활력과 밀도를 수치로 표현한 지표","en_term":"Normalized Difference Vegetation Index (NDVI)","en_desc":"An index that quantifies vegetation vigor and density by analyzing the spectral reflectance characteristics of vegetation captured in satellite imagery."},
+  {"id":2,"ko_term":"정규탄화지수(NBR)","ko_desc":"화재 전후 위성영상을 비교해 산불로 인한 피해 강도를 파악하는 지표","en_term":"Normalized Burn Ratio (NBR)","en_desc":"An index used to assess wildfire damage severity by comparing pre- and post-fire satellite imagery."},
+  {"id":3,"ko_term":"잔존 위험(Residual risk)","ko_desc":"재난 대응이나 복구 조치가 완료된 이후에도 완전히 제거되지 않고 남아 있는 잠재적 위험을 의미","en_term":"Residual Risk","en_desc":"The level of potential risk that remains even after disaster response and recovery measures have been completed."},
+  {"id":4,"ko_term":"차분정규탄화지수(dNBR)","ko_desc":"산불 발생 전후의 정규탄화지수(NBR) 차이를 계산하여 산불로 인한 피해 심각도를 정량적으로 평가하는 지표","en_term":"Differenced Normalized Burn Ratio (dNBR)","en_desc":"An index that quantifies wildfire damage severity by calculating the difference in the Normalized Burn Ratio between pre- and post-fire satellite imagery."},
+  {"id":5,"ko_term":"정규수분지수(NDWI)","ko_desc":"위성영상의 가시광선 및 근적외선 또는 단파적외선 밴드를 활용해 수분 분포와 수체 또는 식생 수분 상태를 분석하는 지표","en_term":"Normalized Difference Water Index (NDWI)","en_desc":"An index used to analyze surface water distribution or vegetation moisture conditions by leveraging visible, near-infrared, and shortwave infrared bands in satellite imagery."},
+  {"id":6,"ko_term":"향상식생지수(EVI)","ko_desc":"대기 영향과 토양 배경 효과를 보정하여 고밀도 식생 지역에서도 식생 상태를 정밀하게 분석할 수 있도록 개선된 식생 지수","en_term":"Enhanced Vegetation Index (EVI)","en_desc":"A vegetation index designed to improve sensitivity in high-biomass regions by correcting for atmospheric influences and soil background effects."},
+  {"id":7,"ko_term":"엽면적지수 (LAI)","ko_desc":"단위 지표면적당 식물 잎의 총 면적 비율을 나타내며, 식생 생장 상태와 탄소·수문 순환 분석에 활용되는 핵심 지표","en_term":"Leaf Area Index (LAI)","en_desc":"A biophysical parameter representing the total one-sided leaf area per unit ground surface area, widely used to assess vegetation growth and ecosystem processes."},
+  {"id":8,"ko_term":"작물분류도(CDL)","ko_desc":"미국 농무부(USDA)에서 제공하는 작물별 재배면적 지도","en_term":"Crop Data Layer (CDL)","en_desc":"A crop-specific cultivated area map provided by the United States Department of Agriculture (USDA)."},
+  {"id":9,"ko_term":"ZHVI(Zillow 주택 가치 지수)","ko_desc":"특정 지역과 주택 유형의 전형적인 주택 가치를 측정하고 시장 변화를 반영하는 지표","en_term":"ZHVI (Zillow Home Value Index)","en_desc":"An index that measures the typical home value for a specific area and housing type while reflecting market changes."},
+  {"id":10,"ko_term":"CAL-FIRE","ko_desc":"캘리포니아 산림 및 화재 방지부(California Department of Forestry and Fire Protection)","en_term":"CAL-FIRE","en_desc":"California Department of Forestry and Fire Protection"},
+  {"id":11,"ko_term":"Sentinel-2","ko_desc":"유럽우주국(European Space Agency)에서 운영하는 지구관측위성","en_term":"Sentinel-2","en_desc":"Earth observation satellites operated by the European Space Agency (ESA)."},
+  {"id":12,"ko_term":"Observer-1A(O1A)","ko_desc":"나라스페이스의 초소형 인공위성","en_term":"Observer-1A (O1A)","en_desc":"Nara Space's miniature satellites (nanosatellites)."},
+  {"id":13,"ko_term":"Fire Layer","ko_desc":"위성영상을 통해 산불, 화재를 즉각적으로 확인할 수 있는 위성영상분석 레이어","en_term":"Fire Layer","en_desc":"A satellite image analysis layer that enables the instant detection of wildfires and fires through satellite imagery."},
+  {"id":14,"ko_term":"합성개구레이더(SAR)","ko_desc":"마이크로파를 이용해 구름과 강수의 영향을 받지 않고 지표를 관측할 수 있는 레이더 영상 기술로, 폭우·홍수 피해를 신속하게 파악하는 데 활용됨","en_term":"Synthetic Aperture Radar (SAR)","en_desc":"A radar imaging technology that uses microwave signals to observe the Earth's surface regardless of cloud cover or precipitation, enabling rapid assessment of heavy rainfall and flood damage."},
+  {"id":15,"ko_term":"CHIRPS Daily","ko_desc":"미국 UC Santa Barbara의 Climate Hazards Group에서 구축한 위성·지상 관측 융합 강수량 데이터셋","en_term":"CHIRPS Daily","en_desc":"A satellite-ground merged precipitation dataset developed by the Climate Hazards Group at the University of California, Santa Barbara (UCSB)."},
+  {"id":16,"ko_term":"ERA5-Land","ko_desc":"유럽중기예보센터(ECMWF)가 생산하는 지상 및 대기 관측 기반 재분석 데이터셋","en_term":"ERA5-Land","en_desc":"A reanalysis dataset produced by the European Centre for Medium-Range Weather Forecasts (ECMWF), based on surface and atmospheric observations."},
+  {"id":17,"ko_term":"건물 탐지 알고리즘","ko_desc":"고해상도 위성영상을 활용해 광범위한 지역의 건물 분포, 밀집도, 존재 여부를 신속하고 정밀하게 추정하는 기술","en_term":"Building Detection Algorithm","en_desc":"A deep learning-based algorithm that rapidly and accurately estimates building presence, distribution, and density across large areas using high-resolution satellite imagery."},
+  {"id":18,"ko_term":"정규식생수분지수(NDMI)","ko_desc":"식생 잎 내부 수분 함량을 기반으로 건조·습윤 상태를 나타내는 지수","en_term":"Normalized Difference Moisture Index (NDMI)","en_desc":"An index that represents dry and moist conditions based on the moisture content within vegetation leaves."},
+  {"id":19,"ko_term":"추가 고사","ko_desc":"산불 이후에도 살아 있던 나무가 시간이 지나며 점차 말라 죽는 현상","en_term":"delayed tree mortality","en_desc":"A phenomenon in which trees that initially survived a wildfire gradually die over time."},
+  {"id":20,"ko_term":"구릉","ko_desc":"산지와 평지의 중간 형태로 150~600 m 정도의 낮은 언덕이 계속되는 지형","en_term":"Hill","en_desc":"A landform characterized by gently elevated terrain between mountainous and flat regions, typically ranging from approximately 150 to 600 meters in elevation."},
+  {"id":21,"ko_term":"수계(Water System)","ko_desc":"특정 지역에서 하천·지류·호수·저수지·습지 등 물이 흐르거나 저장되는 모든 수체가 하나의 유역 안에서 상호 연결되는 통합적 수문 체계","en_term":"Water System","en_desc":"An integrated hydrological framework in which rivers, tributaries, lakes, reservoirs, and wetlands within a watershed are physically interconnected through continuous surface or subsurface water flow and storage processes."},
+  {"id":22,"ko_term":"대기천(Atmospheric River)","ko_desc":"열대 또는 아열대 해역에서 형성된 대량의 수증기가 길고 좁은 띠 형태로 이동하며 중위도 지역에 집중호우를 유발하는 기상 현상","en_term":"Atmospheric River","en_desc":"A meteorological phenomenon in which a long and narrow corridor of concentrated water vapor, formed over tropical or subtropical oceans, transports large amounts of moisture toward mid-latitude regions and generates intense and prolonged precipitation."},
+  {"id":23,"ko_term":"기후 리스크","ko_desc":"극한 강우, 가뭄, 기온 이상과 같은 기후 변동성에 농업 생산이 장기간 노출되는 상태를 의미하며 수확량의 안정성과 농가의 재무 성과에 영향을 미칠 수 있음","en_term":"Climate risk","en_desc":"Long-term exposure of agricultural production to climate variability such as extreme rainfall, drought, or temperature anomalies, which may affect yield stability and financial performance."},
+  {"id":24,"ko_term":"수치표고모델(DEM)","ko_desc":"지표면의 고도 정보를 격자 형태로 수치화한 데이터, 산의 능선·경사·골짜기 등 지형 구조를 정량적으로 분석할 수 있는 모델","en_term":"Digital Elevation Model (DEM)","en_desc":"A gridded dataset that quantifies elevation values of the Earth's surface, enabling the quantitative analysis of terrain features such as ridgelines, slopes, and valleys."},
+  {"id":25,"ko_term":"RGB 위성영상","ko_desc":"적색(Red), 녹색(Green), 청색(Blue) 밴드를 조합해 사람이 보는 것과 유사한 자연색으로 표현한 위성영상","en_term":"RGB Satellite Imagery","en_desc":"Satellite imagery that combines the red, green, and blue spectral bands to produce a natural-color representation similar to what the human eye perceives."},
+  {"id":26,"ko_term":"범람원(Floodplain)","ko_desc":"하천 주변의 평탄한 저지대로 홍수 시 물이 확산되는 지역","en_term":"Floodplain","en_desc":"A flat, low-lying area adjacent to a river where water spreads during flood events."},
+  {"id":27,"ko_term":"수문 영향(Hydrological Impact)","ko_desc":"기후 변화, 토지 이용 변화, 또는 대규모 시설 설치(댐, 제방)가 물의 순환 과정(강수, 증발, 유출, 침투 등)에 미치는 변화","en_term":"Hydrological Impact","en_desc":"Changes to the water cycle caused by factors such as climate change, land-use change, or large-scale infrastructure (e.g., dams or levees), affecting processes including precipitation, evaporation, runoff, and infiltration."},
+  {"id":28,"ko_term":"핵심 병목(Choke point)","ko_desc":"물류나 에너지 수송에서 특정 지점에 흐름이 집중되어, 해당 지점이 막히면 큰 영향을 주는 전략적 통로를 의미","en_term":"Choke point","en_desc":"A strategic passage in logistics or energy transportation where flows are concentrated at a specific location, such that disruption at this point can have significant downstream impacts."}
+];
+
+let currentFilter = 'all';
+const searchInput = document.getElementById('searchInput');
+const clearBtn = document.getElementById('clearBtn');
+const cardList = document.getElementById('cardList');
+const resultCount = document.getElementById('resultCount');
+const toast = document.getElementById('toast');
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function highlightText(text, query) {
+  if (!query) return escapeHtml(text);
+  const escaped = escapeHtml(text);
+  const queryEscaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${queryEscaped})`, 'gi');
+  return escaped.replace(regex, '<mark>$1</mark>');
+}
+
+function matchesQuery(item, query) {
+  if (!query) return true;
+  const q = query.toLowerCase();
+  return item.ko_term.toLowerCase().includes(q) ||
+         item.ko_desc.toLowerCase().includes(q) ||
+         item.en_term.toLowerCase().includes(q) ||
+         item.en_desc.toLowerCase().includes(q);
+}
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('copied');
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> copied';
+    showToast();
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> copy';
+    }, 1500);
+  });
+}
+
+function showToast() {
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1800);
+}
+
+function renderCards() {
+  const query = searchInput.value.trim();
+  const filtered = DATA.filter(item => matchesQuery(item, query));
+
+  if (filtered.length === 0) {
+    cardList.innerHTML = `
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M8 11h6"/>
+        </svg>
+        <p>검색 결과가 없습니다</p>
+      </div>`;
+    resultCount.textContent = '0건';
+    return;
+  }
+
+  resultCount.textContent = query ? `${filtered.length}건 검색됨` : `총 ${filtered.length}건`;
+
+  const showKo = currentFilter === 'all' || currentFilter === 'ko';
+  const showEn = currentFilter === 'all' || currentFilter === 'en';
+
+  cardList.innerHTML = filtered.map(item => {
+    const koSection = showKo ? `
+      <div class="card-row">
+        <div class="lang-label ko">KO</div>
+        <div class="card-content">
+          <div class="term-row">
+            <span class="term">${highlightText(item.ko_term, query)}</span>
+            <button class="copy-btn" onclick="event.stopPropagation(); copyText('${item.ko_term.replace(/'/g, "\\'")}', this)">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> copy
+            </button>
+          </div>
+          <p class="desc">${highlightText(item.ko_desc, query)}</p>
+        </div>
+      </div>` : '';
+
+    const enSection = showEn ? `
+      <div class="card-row">
+        <div class="lang-label en">EN</div>
+        <div class="card-content">
+          <div class="term-row">
+            <span class="term">${highlightText(item.en_term, query)}</span>
+            <button class="copy-btn" onclick="event.stopPropagation(); copyText('${item.en_term.replace(/'/g, "\\'")}', this)">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> copy
+            </button>
+          </div>
+          <p class="desc">${highlightText(item.en_desc, query)}</p>
+        </div>
+      </div>` : '';
+
+    const divider = showKo && showEn ? '<div class="card-divider"></div>' : '';
+
+    return `<div class="card">${koSection}${divider}${enSection}</div>`;
+  }).join('');
+}
+
+searchInput.addEventListener('input', () => {
+  clearBtn.classList.toggle('visible', searchInput.value.length > 0);
+  renderCards();
+});
+
+clearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  clearBtn.classList.remove('visible');
+  searchInput.focus();
+  renderCards();
+});
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderCards();
+  });
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === '/' && document.activeElement !== searchInput) {
+    e.preventDefault();
+    searchInput.focus();
+  }
+  if (e.key === 'Escape') {
+    searchInput.value = '';
+    clearBtn.classList.remove('visible');
+    searchInput.blur();
+    renderCards();
+  }
+});
+
+renderCards();
+</script>
+
+</body>
+</html>
