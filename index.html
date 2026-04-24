@@ -393,6 +393,7 @@ function renderCards(){
             <button class="lang-toggle-btn lang-ko${lang==='ko'?' active-ko':''}" onclick="setLang(${item.id},'ko',event)">KO</button>
             <button class="lang-toggle-btn lang-en${lang==='en'?' active-en':''}" onclick="setLang(${item.id},'en',event)">EN</button>
           </div>
+          <button class="edit-btn" title="수정" onclick="event.stopPropagation();openModal(${item.id})">${EDIT}</button>
           <button class="delete-btn" title="삭제" onclick="event.stopPropagation();gConfirmDel(${item.id})">${TRASH}</button>
         </div>
       </div>
