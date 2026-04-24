@@ -3,494 +3,578 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Word Archive - 한/영 각주 아카이브</title>
+  <title>EP Post 각주, 저작권 관리</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#f8f9fa;--card-bg:#fff;--border:#e2e8f0;--text:#1a202c;--text2:#64748b;--accent:#1ed2b9;--ko:#19324b;--en:#19324b;--ok:#1ed2b9;--hl:#fef08a;--danger:#dc2626}
+    body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
 
-    :root {
-      --bg: #f8f9fa;
-      --card-bg: #ffffff;
-      --border: #e2e8f0;
-      --text: #1a202c;
-      --text-secondary: #64748b;
-      --accent: #2563eb;
-      --accent-light: #dbeafe;
-      --ko-accent: #4f46e5;
-      --en-accent: #0891b2;
-      --copy-success: #16a34a;
-      --highlight: #fef08a;
-    }
+    .header{background:linear-gradient(135deg,#1e3a5f 0%,#1ed2b9 100%);color:#fff;padding:2rem 1rem 0;text-align:center}
+    .header h1{font-size:1.75rem;font-weight:700;margin-bottom:0.15rem;letter-spacing:-0.02em}
+    .header p{font-size:0.9rem;opacity:0.85;margin-bottom:1rem}
 
-    body {
-      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      min-height: 100vh;
-    }
+    /* Tabs */
+    .tabs{display:flex;max-width:720px;margin:0 auto;gap:0}
+    .tab-btn{flex:1;padding:0.65rem;border:none;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.15s;border-bottom:3px solid transparent;border-radius:8px 8px 0 0}
+    .tab-btn:hover{background:rgba(255,255,255,0.25);color:#fff}
+    .tab-btn.active{background:var(--bg);color:var(--text);border-bottom-color:var(--accent);border-radius:8px 8px 0 0}
 
-    .header {
-      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
-      color: white;
-      padding: 2.5rem 1rem 2rem;
-      text-align: center;
-    }
+    .page{display:none}
+    .page.active{display:block}
 
-    .header h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-      letter-spacing: -0.02em;
-    }
+    /* Search */
+    .search-container{max-width:720px;margin:1.25rem auto 0;padding:0 1rem;position:relative;z-index:10}
+    .search-box{display:flex;align-items:center;background:var(--card-bg);border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.1);padding:0.5rem 1rem;gap:0.75rem}
+    .search-icon{color:var(--text2);flex-shrink:0}
+    .search-box input{flex:1;border:none;outline:none;font-size:1rem;padding:0.75rem 0;background:transparent;color:var(--text)}
+    .search-box input::placeholder{color:var(--text2)}
+    .search-clear{background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;border-radius:50%;display:none;align-items:center;justify-content:center}
+    .search-clear:hover{background:var(--bg)}
+    .search-clear.visible{display:flex}
 
-    .header p {
-      font-size: 0.9rem;
-      opacity: 0.85;
-    }
+    /* Controls */
+    .controls{max-width:720px;margin:1rem auto 0;padding:0 1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem}
+    .result-count{font-size:0.85rem;color:var(--text2)}
+    .controls-right{display:flex;align-items:center;gap:0.5rem}
+    .tag-buttons{display:flex;gap:0.35rem}
+    .tag-btn{padding:0.3rem 0.7rem;border-radius:16px;border:1px solid var(--border);background:var(--card-bg);font-size:0.75rem;cursor:pointer;color:var(--text2);transition:all 0.15s}
+    .tag-btn:hover{border-color:#19324b;color:#19324b}
+    .tag-btn.active{background:#19324b;color:#fff;border-color:#19324b}
 
-    .search-container {
-      max-width: 720px;
-      margin: -1.5rem auto 0;
-      padding: 0 1rem;
-      position: relative;
-      z-index: 10;
-    }
+    .add-btn{display:flex;align-items:center;gap:4px;padding:0.35rem 0.75rem;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:0.8rem;font-weight:600;cursor:pointer;transition:background 0.15s}
+    .add-btn:hover{background: #19324b}
 
-    .search-box {
-      display: flex;
-      align-items: center;
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
-      padding: 0.5rem 1rem;
-      gap: 0.75rem;
-    }
+    /* Card list */
+    .card-list{max-width:720px;margin:1rem auto 2rem;padding:0 1rem;display:flex;flex-direction:column;gap:0.5rem}
 
-    .search-icon {
-      color: var(--text-secondary);
-      flex-shrink: 0;
-    }
+    /* Card accordion */
+    .card{background:var(--card-bg);border-radius:10px;border:1px solid var(--border);overflow:hidden;transition:box-shadow 0.15s}
+    .card:hover{box-shadow:0 2px 12px rgba(0,0,0,0.05)}
+    .card-summary{display:flex;align-items:center;padding:0.7rem 1rem;cursor:pointer;gap:0.6rem;user-select:none}
+    .chevron{flex-shrink:0;transition:transform 0.2s;color:var(--text2)}
+    .card.open .chevron{transform:rotate(90deg)}
+    .card-summary-content{flex:1;display:flex;align-items:center;gap:0.5rem;min-width:0}
+    .card-tag{flex-shrink:0;padding:0.15rem 0.5rem;border-radius:10px;font-size:0.65rem;font-weight:600}
+    .card-tag[data-tag="위성영상"]{background:#dee7f0;color:#081c30}
+    .card-tag[data-tag="공간정보"]{background:#dafaf6;color:#081c30}
+    .card-tag[data-tag="기타"]{background:#ececec ;color:#081c30}
+    .card-term{font-weight:600;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .card-summary-actions{flex-shrink:0;display:flex;align-items:center;gap:0.3rem}
+    .lang-toggle{display:flex;background:var(--bg);border-radius:6px;overflow:hidden;border:1px solid var(--border)}
+    .lang-toggle-btn{padding:0.2rem 0.5rem;border:none;background:transparent;font-size:0.68rem;font-weight:600;cursor:pointer;color:var(--text2);transition:all 0.15s}
+    .lang-toggle-btn.active-ko{background:var(--ko);color:#fff}
+    .lang-toggle-btn.active-en{background:var(--en);color:#fff}
+    .delete-btn{background:none;border:none;cursor:pointer;color:var(--border);padding:2px;border-radius:4px;transition:color 0.15s;display:flex;align-items:center}
+    .delete-btn:hover{color:var(--danger)}
+    .edit-btn{background:none;border:none;cursor:pointer;color:var(--border);padding:2px;border-radius:4px;transition:color 0.15s;display:flex;align-items:center}
+    .edit-btn:hover{color:var(--accent)}
+    .card-detail{max-height:0;overflow:hidden;transition:max-height 0.25s ease}
+    .card.open .card-detail{max-height:500px}
+    .card-detail-inner{padding:0 1rem 0.85rem 2.65rem}
+    .desc{font-size:0.88rem;color:var(--text2);line-height:1.65;word-break:keep-all;margin-bottom:0.5rem;white-space:pre-wrap}
+    .card-actions{display:flex;gap:0.4rem;justify-content:flex-end}
+    .copy-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:0.7rem;cursor:pointer;color:var(--text2);transition:all 0.15s;white-space:nowrap;display:flex;align-items:center;gap:4px}
+    .copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .copy-btn.copied{border-color:var(--ok);color:var(--ok);background:#f0fdf4}
+    mark{background:var(--hl);color:inherit;padding:0 2px;border-radius:2px}
+    .empty-state{text-align:center;padding:4rem 1rem;color:var(--text2)}
+    .empty-state svg{margin-bottom:1rem;opacity:0.4}
+    .empty-state p{font-size:0.95rem}
 
-    .search-box input {
-      flex: 1;
-      border: none;
-      outline: none;
-      font-size: 1rem;
-      padding: 0.75rem 0;
-      background: transparent;
-      color: var(--text);
-    }
+    /* --- Copyright card --- */
+    .cr-card{background:var(--card-bg);border-radius:10px;border:1px solid var(--border);overflow:hidden;transition:box-shadow 0.15s}
+    .cr-card:hover{box-shadow:0 2px 12px rgba(0,0,0,0.05)}
+    .cr-summary{display:flex;align-items:center;padding:0.7rem 1rem;cursor:pointer;gap:0.6rem;user-select:none}
+    .cr-card.open .chevron{transform:rotate(90deg)}
+    .cr-name{flex:1;font-weight:600;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cr-provider{font-size:0.72rem;color:var(--text2);flex-shrink:0;background:var(--bg);padding:0.15rem 0.5rem;border-radius:8px}
+    .cr-detail{max-height:0;overflow:hidden;transition:max-height 0.25s ease}
+    .cr-card.open .cr-detail{max-height:2000px}
+    .cr-detail-inner{padding:0 1rem 0.85rem 2.65rem;display:flex;flex-direction:column;gap:0.6rem}
+    .cr-field-label{font-size:0.72rem;font-weight:600;color:var(--text2);margin-bottom:0.15rem}
+    .cr-field-value{font-size:0.88rem;line-height:1.6;color:var(--text);word-break:break-word;white-space:pre-wrap}
+    .cr-copy-row{display:flex;gap:0.4rem;align-items:center}
+    .cr-copy-text{flex:1;font-size:0.82rem;background:var(--bg);padding:0.45rem 0.65rem;border-radius:6px;border:1px solid var(--border);color:var(--text);font-family:monospace;word-break:break-all;line-height:1.5;white-space:pre-wrap}
+    .cr-actions{display:flex;gap:0.3rem;flex-shrink:0;align-items:flex-start;padding-top:0.3rem}
+    .attr-list{display:flex;flex-direction:column;gap:0.45rem}
+    .attr-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.65rem}
+    .attr-label{font-size:0.7rem;font-weight:600;color:var(--text2);margin-bottom:0.25rem}
+    .attr-row{display:flex;align-items:flex-start;gap:0.4rem}
+    .attr-actions{display:flex;gap:0.2rem;flex-shrink:0;align-items:center;padding-top:0.25rem}
+    .attr-add-btn{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;padding:0.35rem;border-radius:6px;border:1px dashed var(--border);background:transparent;font-size:0.75rem;cursor:pointer;color:var(--text2);transition:all 0.15s}
+    .attr-add-btn:hover{border-color:var(--accent);color:var(--accent)}
 
-    .search-box input::placeholder { color: var(--text-secondary); }
+    /* Modal */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;padding:1rem}
+    .modal-overlay.show{display:flex}
+    .modal{background:var(--card-bg);border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.25rem 0}
+    .modal-header h2{font-size:1.1rem;font-weight:700}
+    .modal-close{background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;border-radius:6px}
+    .modal-close:hover{background:var(--bg)}
+    .modal-body{padding:1rem 1.25rem 1.25rem;display:flex;flex-direction:column;gap:0.85rem}
+    .form-group{display:flex;flex-direction:column;gap:0.3rem}
+    .form-group label{font-size:0.8rem;font-weight:600;color:var(--text2)}
+    .form-group input,.form-group textarea,.form-group select{padding:0.55rem 0.75rem;border:1px solid var(--border);border-radius:8px;font-size:0.9rem;font-family:inherit;color:var(--text);background:var(--card-bg);outline:none;transition:border-color 0.15s}
+    .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--accent)}
+    .form-group textarea{resize:vertical;min-height:70px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
+    .modal-footer{display:flex;justify-content:flex-end;gap:0.5rem;padding:0 1.25rem 1.25rem}
+    .btn{padding:0.55rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;border:none;transition:all 0.15s}
+    .btn-cancel{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+    .btn-cancel:hover{background:var(--border)}
+    .btn-primary{background:var(--accent);color:#fff}
+    .btn-primary:hover{background:#1d4ed8}
+    .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;align-items:center;justify-content:center;padding:1rem}
+    .confirm-overlay.show{display:flex}
+    .confirm-box{background:var(--card-bg);border-radius:12px;padding:1.5rem;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+    .confirm-box p{font-size:0.95rem;margin-bottom:1.25rem;line-height:1.5}
+    .confirm-actions{display:flex;gap:0.5rem;justify-content:center}
+    .btn-danger{background:var(--danger);color:#fff}
+    .btn-danger:hover{background:#b91c1c}
 
-    .search-clear {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--text-secondary);
-      padding: 4px;
-      border-radius: 50%;
-      display: none;
-      align-items: center;
-      justify-content: center;
-    }
+    .footer{text-align:center;padding:2rem 1rem;font-size:0.8rem;color:var(--text2);border-top:1px solid var(--border)}
+    .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:#1e293b;color:#fff;padding:0.65rem 1.25rem;border-radius:8px;font-size:0.85rem;opacity:0;transition:all 0.3s;z-index:100;pointer-events:none}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-    .search-clear:hover { background: var(--bg); }
-    .search-clear.visible { display: flex; }
-
-    .controls {
-      max-width: 720px;
-      margin: 1rem auto 0;
-      padding: 0 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .result-count {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-    }
-
-    .filter-buttons {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .filter-btn {
-      padding: 0.35rem 0.85rem;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      background: var(--card-bg);
-      font-size: 0.8rem;
-      cursor: pointer;
-      color: var(--text-secondary);
-      transition: all 0.15s;
-    }
-
-    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-    .card-list {
-      max-width: 720px;
-      margin: 1rem auto 2rem;
-      padding: 0 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      transition: box-shadow 0.15s;
-    }
-
-    .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-
-    .card-row {
-      display: flex;
-      align-items: stretch;
-    }
-
-    .lang-label {
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.75rem 0.4rem;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      flex-shrink: 0;
-      min-width: 28px;
-    }
-
-    .lang-label.ko { background: #eef2ff; color: var(--ko-accent); }
-    .lang-label.en { background: #ecfeff; color: var(--en-accent); }
-
-    .card-content {
-      flex: 1;
-      padding: 0.85rem 1rem;
-      min-width: 0;
-    }
-
-    .term-row {
-      display: flex;
-      align-items: baseline;
-      gap: 0.5rem;
-      margin-bottom: 0.35rem;
-    }
-
-    .term {
-      font-weight: 700;
-      font-size: 1rem;
-      word-break: break-word;
-    }
-
-    .copy-btn {
-      flex-shrink: 0;
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 3px 8px;
-      font-size: 0.7rem;
-      cursor: pointer;
-      color: var(--text-secondary);
-      transition: all 0.15s;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-    .copy-btn.copied {
-      border-color: var(--copy-success);
-      color: var(--copy-success);
-      background: #f0fdf4;
-    }
-
-    .desc {
-      font-size: 0.88rem;
-      color: var(--text-secondary);
-      line-height: 1.65;
-      word-break: keep-all;
-    }
-
-    .card-divider {
-      height: 1px;
-      background: var(--border);
-      margin: 0;
-    }
-
-    mark {
-      background: var(--highlight);
-      color: inherit;
-      padding: 0 2px;
-      border-radius: 2px;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 4rem 1rem;
-      color: var(--text-secondary);
-    }
-
-    .empty-state svg { margin-bottom: 1rem; opacity: 0.4; }
-    .empty-state p { font-size: 0.95rem; }
-
-    .footer {
-      text-align: center;
-      padding: 2rem 1rem;
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      border-top: 1px solid var(--border);
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: #1e293b;
-      color: white;
-      padding: 0.65rem 1.25rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      opacity: 0;
-      transition: all 0.3s;
-      z-index: 100;
-      pointer-events: none;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    @media (max-width: 600px) {
-      .header h1 { font-size: 1.35rem; }
-      .card-content { padding: 0.7rem 0.85rem; }
-      .term { font-size: 0.92rem; }
-      .desc { font-size: 0.82rem; }
-      .controls { flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+    @media(max-width:600px){
+      .header h1{font-size:1.35rem}
+      .card-summary,.cr-summary{padding:0.6rem 0.75rem}
+      .card-detail-inner,.cr-detail-inner{padding-left:2.2rem}
+      .card-term,.cr-name{font-size:0.88rem}
+      .desc{font-size:0.82rem}
+      .controls{flex-direction:column;align-items:flex-start}
+      .form-row{grid-template-columns:1fr}
+      .tabs{gap:0}
+      .tab-btn{font-size:0.78rem;padding:0.55rem 0.25rem}
     }
   </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>Word Archive</h1>
-  <p>한/영 각주 아카이브</p>
+  <h1>EP Post 각주, 저작권 관리</h1>
+  <p>한/영 각주 &amp; 저작권 관리</p>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('glossary')">각주</button>
+    <button class="tab-btn" onclick="switchTab('copyright')">저작권 관리</button>
+  </div>
 </div>
+
+<!-- ==================== PAGE: 각주 ==================== -->
+<div class="page active" id="page-glossary">
 
 <div class="search-container">
   <div class="search-box">
-    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-    </svg>
+    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
     <input type="text" id="searchInput" placeholder="용어 또는 설명 검색... (한글/영문)" autocomplete="off">
-    <button class="search-clear" id="clearBtn" aria-label="검색어 지우기">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
-      </svg>
-    </button>
+    <button class="search-clear" id="clearBtn" aria-label="검색어 지우기"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
   </div>
 </div>
 
 <div class="controls">
-  <span class="result-count" id="resultCount"></span>
-  <div class="filter-buttons">
-    <button class="filter-btn active" data-filter="all">전체</button>
-    <button class="filter-btn" data-filter="ko">한글</button>
-    <button class="filter-btn" data-filter="en">영문</button>
+  <div class="controls-right">
+    <span class="result-count" id="resultCount"></span>
+    <div class="tag-buttons">
+      <button class="tag-btn active" data-tag="all">전체</button>
+      <button class="tag-btn" data-tag="위성영상">위성영상</button>
+      <button class="tag-btn" data-tag="공간정보">공간정보</button>
+      <button class="tag-btn" data-tag="기타">기타</button>
+    </div>
   </div>
+  <button class="add-btn" onclick="openModal()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> 추가
+  </button>
 </div>
 
 <div class="card-list" id="cardList"></div>
-
-<div class="footer">
-  <p>Word Archive &copy; 2026 Nara Space &mdash; 텍스트를 클릭하여 복사할 수 있습니다.</p>
 </div>
 
+<!-- ==================== PAGE: 저작권 관리 ==================== -->
+<div class="page" id="page-copyright">
+
+<div class="search-container">
+  <div class="search-box">
+    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <input type="text" id="crSearchInput" placeholder="저작물명 또는 제공기관 검색..." autocomplete="off">
+    <button class="search-clear" id="crClearBtn" aria-label="검색어 지우기"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+  </div>
+</div>
+
+<div class="controls">
+  <span class="result-count" id="crResultCount"></span>
+  <button class="add-btn" onclick="openCrModal()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> 추가
+  </button>
+</div>
+
+<div class="card-list" id="crCardList"></div>
+</div>
+
+<div class="footer"><p>2026 Nara Space EP Post 각주, 저작권 관리</p></div>
 <div class="toast" id="toast">클립보드에 복사되었습니다</div>
 
+<!-- 각주 Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">각주 추가</h2>
+      <button class="modal-close" onclick="closeModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>카테고리</label><select id="formTag"><option value="위성영상">위성영상</option><option value="공간정보">공간정보</option><option value="기타">기타</option></select></div>
+      <div class="form-row">
+        <div class="form-group"><label>한글 표기</label><input type="text" id="formKoTerm" placeholder="예: 정규식생지수(NDVI)"></div>
+        <div class="form-group"><label>영문 표기</label><input type="text" id="formEnTerm" placeholder="예: NDVI"></div>
+      </div>
+      <div class="form-group"><label>한글 각주 설명</label><textarea id="formKoDesc" placeholder="한글 설명을 입력하세요"></textarea></div>
+      <div class="form-group"><label>영문 각주 설명</label><textarea id="formEnDesc" placeholder="영문 설명을 입력하세요"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" id="formSubmit" onclick="saveItem()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 저작권 Modal -->
+<div class="modal-overlay" id="crModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="crModalTitle">저작권 정보 추가</h2>
+      <button class="modal-close" onclick="closeCrModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>저작물명</label><input type="text" id="crFormName" placeholder="예: Sentinel-2"></div>
+        <div class="form-group"><label>제공기관</label><input type="text" id="crFormProvider" placeholder="예: ESA"></div>
+      </div>
+      <div class="form-group"><label>라이선스</label><input type="text" id="crFormLicense" placeholder="예: CC BY-SA 3.0 IGO"></div>
+      <div class="form-group"><label>비고</label><textarea id="crFormNote" placeholder="사용 조건, 주의사항 등"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" onclick="closeCrModal()">취소</button>
+      <button class="btn btn-primary" id="crFormSubmit" onclick="saveCrItem()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- Attribution Modal -->
+<div class="modal-overlay" id="attrModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="attrModalTitle">표기문 추가</h2>
+      <button class="modal-close" onclick="closeAttrModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>상황 레이블</label><input type="text" id="attrFormLabel" placeholder="예: 학술 논문, 보도자료, 상업 배포"></div>
+      <div class="form-group"><label>저작권 표기문</label><textarea id="attrFormText" placeholder="저작권 표기 문구를 입력하세요" style="min-height:100px"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" onclick="closeAttrModal()">취소</button>
+      <button class="btn btn-primary" id="attrFormSubmit" onclick="saveAttr()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm -->
+<div class="confirm-overlay" id="confirmDialog">
+  <div class="confirm-box">
+    <p id="confirmMsg">삭제하시겠습니까?</p>
+    <div class="confirm-actions">
+      <button class="btn btn-cancel" onclick="closeConfirm()">취소</button>
+      <button class="btn btn-danger" id="confirmOk">삭제</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const DATA = [
-  {"id":1,"ko_term":"정규식생지수(NDVI)","ko_desc":"위성영상에서 식생이 반사하는 빛의 특성을 이용해 식물의 활력과 밀도를 수치로 표현한 지표","en_term":"Normalized Difference Vegetation Index (NDVI)","en_desc":"An index that quantifies vegetation vigor and density by analyzing the spectral reflectance characteristics of vegetation captured in satellite imagery."},
-  {"id":2,"ko_term":"정규탄화지수(NBR)","ko_desc":"화재 전후 위성영상을 비교해 산불로 인한 피해 강도를 파악하는 지표","en_term":"Normalized Burn Ratio (NBR)","en_desc":"An index used to assess wildfire damage severity by comparing pre- and post-fire satellite imagery."},
-  {"id":3,"ko_term":"잔존 위험(Residual risk)","ko_desc":"재난 대응이나 복구 조치가 완료된 이후에도 완전히 제거되지 않고 남아 있는 잠재적 위험을 의미","en_term":"Residual Risk","en_desc":"The level of potential risk that remains even after disaster response and recovery measures have been completed."},
-  {"id":4,"ko_term":"차분정규탄화지수(dNBR)","ko_desc":"산불 발생 전후의 정규탄화지수(NBR) 차이를 계산하여 산불로 인한 피해 심각도를 정량적으로 평가하는 지표","en_term":"Differenced Normalized Burn Ratio (dNBR)","en_desc":"An index that quantifies wildfire damage severity by calculating the difference in the Normalized Burn Ratio between pre- and post-fire satellite imagery."},
-  {"id":5,"ko_term":"정규수분지수(NDWI)","ko_desc":"위성영상의 가시광선 및 근적외선 또는 단파적외선 밴드를 활용해 수분 분포와 수체 또는 식생 수분 상태를 분석하는 지표","en_term":"Normalized Difference Water Index (NDWI)","en_desc":"An index used to analyze surface water distribution or vegetation moisture conditions by leveraging visible, near-infrared, and shortwave infrared bands in satellite imagery."},
-  {"id":6,"ko_term":"향상식생지수(EVI)","ko_desc":"대기 영향과 토양 배경 효과를 보정하여 고밀도 식생 지역에서도 식생 상태를 정밀하게 분석할 수 있도록 개선된 식생 지수","en_term":"Enhanced Vegetation Index (EVI)","en_desc":"A vegetation index designed to improve sensitivity in high-biomass regions by correcting for atmospheric influences and soil background effects."},
-  {"id":7,"ko_term":"엽면적지수 (LAI)","ko_desc":"단위 지표면적당 식물 잎의 총 면적 비율을 나타내며, 식생 생장 상태와 탄소·수문 순환 분석에 활용되는 핵심 지표","en_term":"Leaf Area Index (LAI)","en_desc":"A biophysical parameter representing the total one-sided leaf area per unit ground surface area, widely used to assess vegetation growth and ecosystem processes."},
-  {"id":8,"ko_term":"작물분류도(CDL)","ko_desc":"미국 농무부(USDA)에서 제공하는 작물별 재배면적 지도","en_term":"Crop Data Layer (CDL)","en_desc":"A crop-specific cultivated area map provided by the United States Department of Agriculture (USDA)."},
-  {"id":9,"ko_term":"ZHVI(Zillow 주택 가치 지수)","ko_desc":"특정 지역과 주택 유형의 전형적인 주택 가치를 측정하고 시장 변화를 반영하는 지표","en_term":"ZHVI (Zillow Home Value Index)","en_desc":"An index that measures the typical home value for a specific area and housing type while reflecting market changes."},
-  {"id":10,"ko_term":"CAL-FIRE","ko_desc":"캘리포니아 산림 및 화재 방지부(California Department of Forestry and Fire Protection)","en_term":"CAL-FIRE","en_desc":"California Department of Forestry and Fire Protection"},
-  {"id":11,"ko_term":"Sentinel-2","ko_desc":"유럽우주국(European Space Agency)에서 운영하는 지구관측위성","en_term":"Sentinel-2","en_desc":"Earth observation satellites operated by the European Space Agency (ESA)."},
-  {"id":12,"ko_term":"Observer-1A(O1A)","ko_desc":"나라스페이스의 초소형 인공위성","en_term":"Observer-1A (O1A)","en_desc":"Nara Space's miniature satellites (nanosatellites)."},
-  {"id":13,"ko_term":"Fire Layer","ko_desc":"위성영상을 통해 산불, 화재를 즉각적으로 확인할 수 있는 위성영상분석 레이어","en_term":"Fire Layer","en_desc":"A satellite image analysis layer that enables the instant detection of wildfires and fires through satellite imagery."},
-  {"id":14,"ko_term":"합성개구레이더(SAR)","ko_desc":"마이크로파를 이용해 구름과 강수의 영향을 받지 않고 지표를 관측할 수 있는 레이더 영상 기술로, 폭우·홍수 피해를 신속하게 파악하는 데 활용됨","en_term":"Synthetic Aperture Radar (SAR)","en_desc":"A radar imaging technology that uses microwave signals to observe the Earth's surface regardless of cloud cover or precipitation, enabling rapid assessment of heavy rainfall and flood damage."},
-  {"id":15,"ko_term":"CHIRPS Daily","ko_desc":"미국 UC Santa Barbara의 Climate Hazards Group에서 구축한 위성·지상 관측 융합 강수량 데이터셋","en_term":"CHIRPS Daily","en_desc":"A satellite-ground merged precipitation dataset developed by the Climate Hazards Group at the University of California, Santa Barbara (UCSB)."},
-  {"id":16,"ko_term":"ERA5-Land","ko_desc":"유럽중기예보센터(ECMWF)가 생산하는 지상 및 대기 관측 기반 재분석 데이터셋","en_term":"ERA5-Land","en_desc":"A reanalysis dataset produced by the European Centre for Medium-Range Weather Forecasts (ECMWF), based on surface and atmospheric observations."},
-  {"id":17,"ko_term":"건물 탐지 알고리즘","ko_desc":"고해상도 위성영상을 활용해 광범위한 지역의 건물 분포, 밀집도, 존재 여부를 신속하고 정밀하게 추정하는 기술","en_term":"Building Detection Algorithm","en_desc":"A deep learning-based algorithm that rapidly and accurately estimates building presence, distribution, and density across large areas using high-resolution satellite imagery."},
-  {"id":18,"ko_term":"정규식생수분지수(NDMI)","ko_desc":"식생 잎 내부 수분 함량을 기반으로 건조·습윤 상태를 나타내는 지수","en_term":"Normalized Difference Moisture Index (NDMI)","en_desc":"An index that represents dry and moist conditions based on the moisture content within vegetation leaves."},
-  {"id":19,"ko_term":"추가 고사","ko_desc":"산불 이후에도 살아 있던 나무가 시간이 지나며 점차 말라 죽는 현상","en_term":"delayed tree mortality","en_desc":"A phenomenon in which trees that initially survived a wildfire gradually die over time."},
-  {"id":20,"ko_term":"구릉","ko_desc":"산지와 평지의 중간 형태로 150~600 m 정도의 낮은 언덕이 계속되는 지형","en_term":"Hill","en_desc":"A landform characterized by gently elevated terrain between mountainous and flat regions, typically ranging from approximately 150 to 600 meters in elevation."},
-  {"id":21,"ko_term":"수계(Water System)","ko_desc":"특정 지역에서 하천·지류·호수·저수지·습지 등 물이 흐르거나 저장되는 모든 수체가 하나의 유역 안에서 상호 연결되는 통합적 수문 체계","en_term":"Water System","en_desc":"An integrated hydrological framework in which rivers, tributaries, lakes, reservoirs, and wetlands within a watershed are physically interconnected through continuous surface or subsurface water flow and storage processes."},
-  {"id":22,"ko_term":"대기천(Atmospheric River)","ko_desc":"열대 또는 아열대 해역에서 형성된 대량의 수증기가 길고 좁은 띠 형태로 이동하며 중위도 지역에 집중호우를 유발하는 기상 현상","en_term":"Atmospheric River","en_desc":"A meteorological phenomenon in which a long and narrow corridor of concentrated water vapor, formed over tropical or subtropical oceans, transports large amounts of moisture toward mid-latitude regions and generates intense and prolonged precipitation."},
-  {"id":23,"ko_term":"기후 리스크","ko_desc":"극한 강우, 가뭄, 기온 이상과 같은 기후 변동성에 농업 생산이 장기간 노출되는 상태를 의미하며 수확량의 안정성과 농가의 재무 성과에 영향을 미칠 수 있음","en_term":"Climate risk","en_desc":"Long-term exposure of agricultural production to climate variability such as extreme rainfall, drought, or temperature anomalies, which may affect yield stability and financial performance."},
-  {"id":24,"ko_term":"수치표고모델(DEM)","ko_desc":"지표면의 고도 정보를 격자 형태로 수치화한 데이터, 산의 능선·경사·골짜기 등 지형 구조를 정량적으로 분석할 수 있는 모델","en_term":"Digital Elevation Model (DEM)","en_desc":"A gridded dataset that quantifies elevation values of the Earth's surface, enabling the quantitative analysis of terrain features such as ridgelines, slopes, and valleys."},
-  {"id":25,"ko_term":"RGB 위성영상","ko_desc":"적색(Red), 녹색(Green), 청색(Blue) 밴드를 조합해 사람이 보는 것과 유사한 자연색으로 표현한 위성영상","en_term":"RGB Satellite Imagery","en_desc":"Satellite imagery that combines the red, green, and blue spectral bands to produce a natural-color representation similar to what the human eye perceives."},
-  {"id":26,"ko_term":"범람원(Floodplain)","ko_desc":"하천 주변의 평탄한 저지대로 홍수 시 물이 확산되는 지역","en_term":"Floodplain","en_desc":"A flat, low-lying area adjacent to a river where water spreads during flood events."},
-  {"id":27,"ko_term":"수문 영향(Hydrological Impact)","ko_desc":"기후 변화, 토지 이용 변화, 또는 대규모 시설 설치(댐, 제방)가 물의 순환 과정(강수, 증발, 유출, 침투 등)에 미치는 변화","en_term":"Hydrological Impact","en_desc":"Changes to the water cycle caused by factors such as climate change, land-use change, or large-scale infrastructure (e.g., dams or levees), affecting processes including precipitation, evaporation, runoff, and infiltration."},
-  {"id":28,"ko_term":"핵심 병목(Choke point)","ko_desc":"물류나 에너지 수송에서 특정 지점에 흐름이 집중되어, 해당 지점이 막히면 큰 영향을 주는 전략적 통로를 의미","en_term":"Choke point","en_desc":"A strategic passage in logistics or energy transportation where flows are concentrated at a specific location, such that disruption at this point can have significant downstream impacts."}
+/* ======================== SHARED ======================== */
+const COPY_ICON='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+const CHECK_ICON='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+const CHEVRON='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+const TRASH='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
+const EDIT='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>';
+const toast=document.getElementById('toast');
+const confirmDialog=document.getElementById('confirmDialog');
+
+function showToast(m){toast.textContent=m||'클립보드에 복사되었습니다';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800)}
+function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function hl(text,q){if(!q)return escapeHtml(text);const e=escapeHtml(text);const r=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');return e.replace(new RegExp(`(${r})`,'gi'),'<mark>$1</mark>')}
+function copyTo(text,btn,label){navigator.clipboard.writeText(text).then(()=>{btn.classList.add('copied');btn.innerHTML=CHECK_ICON+' copied';showToast();setTimeout(()=>{btn.classList.remove('copied');btn.innerHTML=COPY_ICON+' '+label},1500)})}
+
+let pendingAction=null;
+function closeConfirm(){confirmDialog.classList.remove('show');pendingAction=null}
+document.getElementById('confirmOk').addEventListener('click',()=>{if(pendingAction)pendingAction();closeConfirm()});
+let confirmMouseDownTarget=null;
+confirmDialog.addEventListener('mousedown',e=>{confirmMouseDownTarget=e.target});
+confirmDialog.addEventListener('click',e=>{if(e.target===confirmDialog&&confirmMouseDownTarget===confirmDialog)closeConfirm()});
+
+/* Tab switch */
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',['glossary','copyright'][i]===name));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+name));
+}
+
+/* ======================== GLOSSARY ======================== */
+const INITIAL_DATA=[
+  {"id":1,"tag":"위성영상","ko_term":"정규식생지수(NDVI)","ko_desc":"위성영상에서 식생이 반사하는 빛의 특성을 이용해 식물의 활력과 밀도를 수치로 표현한 지표","en_term":"Normalized Difference Vegetation Index (NDVI)","en_desc":"An index that quantifies vegetation vigor and density by analyzing the spectral reflectance characteristics of vegetation captured in satellite imagery."},
+  {"id":2,"tag":"위성영상","ko_term":"정규탄화지수(NBR)","ko_desc":"화재 전후 위성영상을 비교해 산불로 인한 피해 강도를 파악하는 지표","en_term":"Normalized Burn Ratio (NBR)","en_desc":"An index used to assess wildfire damage severity by comparing pre- and post-fire satellite imagery."},
+  {"id":3,"tag":"기타","ko_term":"잔존 위험(Residual risk)","ko_desc":"재난 대응이나 복구 조치가 완료된 이후에도 완전히 제거되지 않고 남아 있는 잠재적 위험을 의미","en_term":"Residual Risk","en_desc":"The level of potential risk that remains even after disaster response and recovery measures have been completed."},
+  {"id":4,"tag":"위성영상","ko_term":"차분정규탄화지수(dNBR)","ko_desc":"산불 발생 전후의 정규탄화지수(NBR) 차이를 계산하여 산불로 인한 피해 심각도를 정량적으로 평가하는 지표","en_term":"Differenced Normalized Burn Ratio (dNBR)","en_desc":"An index that quantifies wildfire damage severity by calculating the difference in the Normalized Burn Ratio between pre- and post-fire satellite imagery."},
+  {"id":5,"tag":"위성영상","ko_term":"정규수분지수(NDWI)","ko_desc":"위성영상의 가시광선 및 근적외선 또는 단파적외선 밴드를 활용해 수분 분포와 수체 또는 식생 수분 상태를 분석하는 지표","en_term":"Normalized Difference Water Index (NDWI)","en_desc":"An index used to analyze surface water distribution or vegetation moisture conditions by leveraging visible, near-infrared, and shortwave infrared bands in satellite imagery."},
+  {"id":6,"tag":"위성영상","ko_term":"향상식생지수(EVI)","ko_desc":"대기 영향과 토양 배경 효과를 보정하여 고밀도 식생 지역에서도 식생 상태를 정밀하게 분석할 수 있도록 개선된 식생 지수","en_term":"Enhanced Vegetation Index (EVI)","en_desc":"A vegetation index designed to improve sensitivity in high-biomass regions by correcting for atmospheric influences and soil background effects."},
+  {"id":7,"tag":"위성영상","ko_term":"엽면적지수 (LAI)","ko_desc":"단위 지표면적당 식물 잎의 총 면적 비율을 나타내며, 식생 생장 상태와 탄소·수문 순환 분석에 활용되는 핵심 지표","en_term":"Leaf Area Index (LAI)","en_desc":"A biophysical parameter representing the total one-sided leaf area per unit ground surface area, widely used to assess vegetation growth and ecosystem processes."},
+  {"id":8,"tag":"공간정보","ko_term":"작물분류도(CDL)","ko_desc":"미국 농무부(USDA)에서 제공하는 작물별 재배면적 지도","en_term":"Crop Data Layer (CDL)","en_desc":"A crop-specific cultivated area map provided by the United States Department of Agriculture (USDA)."},
+  {"id":9,"tag":"기타","ko_term":"ZHVI(Zillow 주택 가치 지수)","ko_desc":"특정 지역과 주택 유형의 전형적인 주택 가치를 측정하고 시장 변화를 반영하는 지표","en_term":"ZHVI (Zillow Home Value Index)","en_desc":"An index that measures the typical home value for a specific area and housing type while reflecting market changes."},
+  {"id":10,"tag":"기타","ko_term":"CAL-FIRE","ko_desc":"캘리포니아 산림 및 화재 방지부(California Department of Forestry and Fire Protection)","en_term":"CAL-FIRE","en_desc":"California Department of Forestry and Fire Protection"},
+  {"id":11,"tag":"위성영상","ko_term":"Sentinel-2","ko_desc":"유럽우주국(European Space Agency)에서 운영하는 지구관측위성","en_term":"Sentinel-2","en_desc":"Earth observation satellites operated by the European Space Agency (ESA)."},
+  {"id":12,"tag":"위성영상","ko_term":"Observer-1A(O1A)","ko_desc":"나라스페이스의 초소형 인공위성","en_term":"Observer-1A (O1A)","en_desc":"Nara Space's miniature satellites (nanosatellites)."},
+  {"id":13,"tag":"위성영상","ko_term":"Fire Layer","ko_desc":"위성영상을 통해 산불, 화재를 즉각적으로 확인할 수 있는 위성영상분석 레이어","en_term":"Fire Layer","en_desc":"A satellite image analysis layer that enables the instant detection of wildfires and fires through satellite imagery."},
+  {"id":14,"tag":"위성영상","ko_term":"합성개구레이더(SAR)","ko_desc":"마이크로파를 이용해 구름과 강수의 영향을 받지 않고 지표를 관측할 수 있는 레이더 영상 기술로, 폭우·홍수 피해를 신속하게 파악하는 데 활용됨","en_term":"Synthetic Aperture Radar (SAR)","en_desc":"A radar imaging technology that uses microwave signals to observe the Earth's surface regardless of cloud cover or precipitation, enabling rapid assessment of heavy rainfall and flood damage."},
+  {"id":15,"tag":"위성영상","ko_term":"CHIRPS Daily","ko_desc":"미국 UC Santa Barbara의 Climate Hazards Group에서 구축한 위성·지상 관측 융합 강수량 데이터셋","en_term":"CHIRPS Daily","en_desc":"A satellite-ground merged precipitation dataset developed by the Climate Hazards Group at the University of California, Santa Barbara (UCSB)."},
+  {"id":16,"tag":"위성영상","ko_term":"ERA5-Land","ko_desc":"유럽중기예보센터(ECMWF)가 생산하는 지상 및 대기 관측 기반 재분석 데이터셋","en_term":"ERA5-Land","en_desc":"A reanalysis dataset produced by the European Centre for Medium-Range Weather Forecasts (ECMWF), based on surface and atmospheric observations."},
+  {"id":17,"tag":"위성영상","ko_term":"건물 탐지 알고리즘","ko_desc":"고해상도 위성영상을 활용해 광범위한 지역의 건물 분포, 밀집도, 존재 여부를 신속하고 정밀하게 추정하는 기술","en_term":"Building Detection Algorithm","en_desc":"A deep learning-based algorithm that rapidly and accurately estimates building presence, distribution, and density across large areas using high-resolution satellite imagery."},
+  {"id":18,"tag":"위성영상","ko_term":"정규식생수분지수(NDMI)","ko_desc":"식생 잎 내부 수분 함량을 기반으로 건조·습윤 상태를 나타내는 지수","en_term":"Normalized Difference Moisture Index (NDMI)","en_desc":"An index that represents dry and moist conditions based on the moisture content within vegetation leaves."},
+  {"id":19,"tag":"기타","ko_term":"추가 고사","ko_desc":"산불 이후에도 살아 있던 나무가 시간이 지나며 점차 말라 죽는 현상","en_term":"delayed tree mortality","en_desc":"A phenomenon in which trees that initially survived a wildfire gradually die over time."},
+  {"id":20,"tag":"공간정보","ko_term":"구릉","ko_desc":"산지와 평지의 중간 형태로 150~600 m 정도의 낮은 언덕이 계속되는 지형","en_term":"Hill","en_desc":"A landform characterized by gently elevated terrain between mountainous and flat regions, typically ranging from approximately 150 to 600 meters in elevation."},
+  {"id":21,"tag":"공간정보","ko_term":"수계(Water System)","ko_desc":"특정 지역에서 하천·지류·호수·저수지·습지 등 물이 흐르거나 저장되는 모든 수체가 하나의 유역 안에서 상호 연결되는 통합적 수문 체계","en_term":"Water System","en_desc":"An integrated hydrological framework in which rivers, tributaries, lakes, reservoirs, and wetlands within a watershed are physically interconnected through continuous surface or subsurface water flow and storage processes."},
+  {"id":22,"tag":"공간정보","ko_term":"대기천(Atmospheric River)","ko_desc":"열대 또는 아열대 해역에서 형성된 대량의 수증기가 길고 좁은 띠 형태로 이동하며 중위도 지역에 집중호우를 유발하는 기상 현상","en_term":"Atmospheric River","en_desc":"A meteorological phenomenon in which a long and narrow corridor of concentrated water vapor, formed over tropical or subtropical oceans, transports large amounts of moisture toward mid-latitude regions and generates intense and prolonged precipitation."},
+  {"id":23,"tag":"기타","ko_term":"기후 리스크","ko_desc":"극한 강우, 가뭄, 기온 이상과 같은 기후 변동성에 농업 생산이 장기간 노출되는 상태를 의미하며 수확량의 안정성과 농가의 재무 성과에 영향을 미칠 수 있음","en_term":"Climate risk","en_desc":"Long-term exposure of agricultural production to climate variability such as extreme rainfall, drought, or temperature anomalies, which may affect yield stability and financial performance."},
+  {"id":24,"tag":"공간정보","ko_term":"수치표고모델(DEM)","ko_desc":"지표면의 고도 정보를 격자 형태로 수치화한 데이터, 산의 능선·경사·골짜기 등 지형 구조를 정량적으로 분석할 수 있는 모델","en_term":"Digital Elevation Model (DEM)","en_desc":"A gridded dataset that quantifies elevation values of the Earth's surface, enabling the quantitative analysis of terrain features such as ridgelines, slopes, and valleys."},
+  {"id":25,"tag":"위성영상","ko_term":"RGB 위성영상","ko_desc":"적색(Red), 녹색(Green), 청색(Blue) 밴드를 조합해 사람이 보는 것과 유사한 자연색으로 표현한 위성영상","en_term":"RGB Satellite Imagery","en_desc":"Satellite imagery that combines the red, green, and blue spectral bands to produce a natural-color representation similar to what the human eye perceives."},
+  {"id":26,"tag":"공간정보","ko_term":"범람원(Floodplain)","ko_desc":"하천 주변의 평탄한 저지대로 홍수 시 물이 확산되는 지역","en_term":"Floodplain","en_desc":"A flat, low-lying area adjacent to a river where water spreads during flood events."},
+  {"id":27,"tag":"공간정보","ko_term":"수문 영향(Hydrological Impact)","ko_desc":"기후 변화, 토지 이용 변화, 또는 대규모 시설 설치(댐, 제방)가 물의 순환 과정(강수, 증발, 유출, 침투 등)에 미치는 변화","en_term":"Hydrological Impact","en_desc":"Changes to the water cycle caused by factors such as climate change, land-use change, or large-scale infrastructure (e.g., dams or levees), affecting processes including precipitation, evaporation, runoff, and infiltration."},
+  {"id":28,"tag":"기타","ko_term":"핵심 병목(Choke point)","ko_desc":"물류나 에너지 수송에서 특정 지점에 흐름이 집중되어, 해당 지점이 막히면 큰 영향을 주는 전략적 통로를 의미","en_term":"Choke point","en_desc":"A strategic passage in logistics or energy transportation where flows are concentrated at a specific location, such that disruption at this point can have significant downstream impacts."}
 ];
 
-let currentFilter = 'all';
-const searchInput = document.getElementById('searchInput');
-const clearBtn = document.getElementById('clearBtn');
-const cardList = document.getElementById('cardList');
-const resultCount = document.getElementById('resultCount');
-const toast = document.getElementById('toast');
+const GLS='word-archive-data';
+let gData=JSON.parse(localStorage.getItem(GLS))||JSON.parse(JSON.stringify(INITIAL_DATA));
+let currentTag='all',openGId=null,editingGId=null;
+const cardLangs={};gData.forEach(d=>{cardLangs[d.id]='ko'});
+const searchInput=document.getElementById('searchInput'),clearBtn=document.getElementById('clearBtn'),cardList=document.getElementById('cardList'),resultCount=document.getElementById('resultCount'),modal=document.getElementById('modal');
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+function gPersist(){localStorage.setItem(GLS,JSON.stringify(gData))}
+function gNextId(){return gData.length?Math.max(...gData.map(d=>d.id))+1:1}
+function gMatch(item,q){if(!q)return true;const l=q.toLowerCase();return item.ko_term.toLowerCase().includes(l)||item.ko_desc.toLowerCase().includes(l)||item.en_term.toLowerCase().includes(l)||item.en_desc.toLowerCase().includes(l)}
+
+function toggleCard(id){openGId=openGId===id?null:id;document.querySelectorAll('#cardList .card').forEach(c=>c.classList.toggle('open',Number(c.dataset.cardId)===openGId))}
+
+function setLang(id,lang,e){
+  e.stopPropagation();cardLangs[id]=lang;
+  const card=document.querySelector(`[data-card-id="${id}"]`);if(!card)return;
+  const item=gData.find(d=>d.id===id),q=searchInput.value.trim();
+  const term=lang==='ko'?item.ko_term:item.en_term,desc=lang==='ko'?item.ko_desc:item.en_desc;
+  card.querySelector('.card-term').innerHTML=hl(term,q);
+  card.querySelector('.card-desc').innerHTML=hl(desc,q);
+  card.querySelector('.lang-ko').className='lang-toggle-btn lang-ko'+(lang==='ko'?' active-ko':'');
+  card.querySelector('.lang-en').className='lang-toggle-btn lang-en'+(lang==='en'?' active-en':'');
+  const st=term.replace(/'/g,"\\'"),sd=desc.replace(/'/g,"\\'").replace(/\n/g,'\\n');
+  card.querySelector('.btn-copy-term').setAttribute('onclick',`event.stopPropagation();copyTo('${st}',this,'이름 복사')`);
+  card.querySelector('.btn-copy-desc').setAttribute('onclick',`event.stopPropagation();copyTo('${sd}',this,'설명 복사')`);
+  card.querySelector('.btn-copy-term').innerHTML=COPY_ICON+' 이름 복사';
+  card.querySelector('.btn-copy-desc').innerHTML=COPY_ICON+' 설명 복사';
 }
 
-function highlightText(text, query) {
-  if (!query) return escapeHtml(text);
-  const escaped = escapeHtml(text);
-  const queryEscaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(`(${queryEscaped})`, 'gi');
-  return escaped.replace(regex, '<mark>$1</mark>');
-}
-
-function matchesQuery(item, query) {
-  if (!query) return true;
-  const q = query.toLowerCase();
-  return item.ko_term.toLowerCase().includes(q) ||
-         item.ko_desc.toLowerCase().includes(q) ||
-         item.en_term.toLowerCase().includes(q) ||
-         item.en_desc.toLowerCase().includes(q);
-}
-
-function copyText(text, btn) {
-  navigator.clipboard.writeText(text).then(() => {
-    btn.classList.add('copied');
-    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> copied';
-    showToast();
-    setTimeout(() => {
-      btn.classList.remove('copied');
-      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> copy';
-    }, 1500);
-  });
-}
-
-function showToast() {
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 1800);
-}
-
-function renderCards() {
-  const query = searchInput.value.trim();
-  const filtered = DATA.filter(item => matchesQuery(item, query));
-
-  if (filtered.length === 0) {
-    cardList.innerHTML = `
-      <div class="empty-state">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M8 11h6"/>
-        </svg>
-        <p>검색 결과가 없습니다</p>
-      </div>`;
-    resultCount.textContent = '0건';
-    return;
-  }
-
-  resultCount.textContent = query ? `${filtered.length}건 검색됨` : `총 ${filtered.length}건`;
-
-  const showKo = currentFilter === 'all' || currentFilter === 'ko';
-  const showEn = currentFilter === 'all' || currentFilter === 'en';
-
-  cardList.innerHTML = filtered.map(item => {
-    const koSection = showKo ? `
-      <div class="card-row">
-        <div class="lang-label ko">KO</div>
-        <div class="card-content">
-          <div class="term-row">
-            <span class="term">${highlightText(item.ko_term, query)}</span>
-            <button class="copy-btn" onclick="event.stopPropagation(); copyText('${item.ko_term.replace(/'/g, "\\'")}', this)">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> copy
-            </button>
+function renderCards(){
+  const q=searchInput.value.trim();
+  const f=gData.filter(i=>gMatch(i,q)&&(currentTag==='all'||i.tag===currentTag));
+  if(!f.length){cardList.innerHTML='<div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M8 11h6"/></svg><p>검색 결과가 없습니다</p></div>';resultCount.textContent='0건';return}
+  resultCount.textContent=q||currentTag!=='all'?`${f.length}건`:`총 ${f.length}건`;
+  cardList.innerHTML=f.map(item=>{
+    const lang=cardLangs[item.id]||'ko',term=lang==='ko'?item.ko_term:item.en_term,desc=lang==='ko'?item.ko_desc:item.en_desc;
+    const st=term.replace(/'/g,"\\'"),sd=desc.replace(/'/g,"\\'").replace(/\n/g,'\\n');
+    return `<div class="card${openGId===item.id?' open':''}" data-card-id="${item.id}">
+      <div class="card-summary" onclick="toggleCard(${item.id})">
+        <span class="chevron">${CHEVRON}</span>
+        <div class="card-summary-content"><span class="card-tag" data-tag="${item.tag}">${item.tag}</span><span class="card-term">${hl(term,q)}</span></div>
+        <div class="card-summary-actions">
+          <div class="lang-toggle" onclick="event.stopPropagation()">
+            <button class="lang-toggle-btn lang-ko${lang==='ko'?' active-ko':''}" onclick="setLang(${item.id},'ko',event)">KO</button>
+            <button class="lang-toggle-btn lang-en${lang==='en'?' active-en':''}" onclick="setLang(${item.id},'en',event)">EN</button>
           </div>
-          <p class="desc">${highlightText(item.ko_desc, query)}</p>
+          <button class="delete-btn" title="삭제" onclick="event.stopPropagation();gConfirmDel(${item.id})">${TRASH}</button>
         </div>
-      </div>` : '';
-
-    const enSection = showEn ? `
-      <div class="card-row">
-        <div class="lang-label en">EN</div>
-        <div class="card-content">
-          <div class="term-row">
-            <span class="term">${highlightText(item.en_term, query)}</span>
-            <button class="copy-btn" onclick="event.stopPropagation(); copyText('${item.en_term.replace(/'/g, "\\'")}', this)">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> copy
-            </button>
-          </div>
-          <p class="desc">${highlightText(item.en_desc, query)}</p>
+      </div>
+      <div class="card-detail"><div class="card-detail-inner">
+        <p class="card-desc desc">${hl(desc,q)}</p>
+        <div class="card-actions">
+          <button class="copy-btn btn-copy-term" onclick="event.stopPropagation();copyTo('${st}',this,'이름 복사')">${COPY_ICON} 이름 복사</button>
+          <button class="copy-btn btn-copy-desc" onclick="event.stopPropagation();copyTo('${sd}',this,'설명 복사')">${COPY_ICON} 설명 복사</button>
         </div>
-      </div>` : '';
-
-    const divider = showKo && showEn ? '<div class="card-divider"></div>' : '';
-
-    return `<div class="card">${koSection}${divider}${enSection}</div>`;
-  }).join('');
+      </div></div>
+    </div>`}).join('');
 }
 
-searchInput.addEventListener('input', () => {
-  clearBtn.classList.toggle('visible', searchInput.value.length > 0);
-  renderCards();
-});
-
-clearBtn.addEventListener('click', () => {
-  searchInput.value = '';
-  clearBtn.classList.remove('visible');
-  searchInput.focus();
-  renderCards();
-});
-
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentFilter = btn.dataset.filter;
-    renderCards();
-  });
-});
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === '/' && document.activeElement !== searchInput) {
-    e.preventDefault();
-    searchInput.focus();
-  }
-  if (e.key === 'Escape') {
-    searchInput.value = '';
-    clearBtn.classList.remove('visible');
-    searchInput.blur();
-    renderCards();
-  }
-});
-
+function openModal(id){
+  editingGId=id||null;
+  document.getElementById('modalTitle').textContent=id?'각주 수정':'각주 추가';
+  document.getElementById('formSubmit').textContent=id?'저장':'추가';
+  if(id){const i=gData.find(d=>d.id===id);document.getElementById('formTag').value=i.tag;document.getElementById('formKoTerm').value=i.ko_term;document.getElementById('formEnTerm').value=i.en_term;document.getElementById('formKoDesc').value=i.ko_desc;document.getElementById('formEnDesc').value=i.en_desc}
+  else{['formKoTerm','formEnTerm','formKoDesc','formEnDesc'].forEach(x=>document.getElementById(x).value='');document.getElementById('formTag').value='위성영상'}
+  modal.classList.add('show');setTimeout(()=>document.getElementById('formKoTerm').focus(),100);
+}
+function closeModal(){modal.classList.remove('show');editingGId=null}
+function saveItem(){
+  const tag=document.getElementById('formTag').value,ko_term=document.getElementById('formKoTerm').value.trim(),en_term=document.getElementById('formEnTerm').value.trim(),ko_desc=document.getElementById('formKoDesc').value.trim(),en_desc=document.getElementById('formEnDesc').value.trim();
+  if(!ko_term&&!en_term){showToast('용어를 입력해주세요');return}
+  if(editingGId){Object.assign(gData.find(d=>d.id===editingGId),{tag,ko_term,en_term,ko_desc,en_desc});showToast('수정되었습니다')}
+  else{const nid=gNextId();gData.push({id:nid,tag,ko_term,en_term,ko_desc,en_desc});cardLangs[nid]='ko';showToast('추가되었습니다')}
+  gPersist();closeModal();renderCards();
+}
+function gConfirmDel(id){
+  pendingAction=()=>{gData=gData.filter(d=>d.id!==id);if(openGId===id)openGId=null;gPersist();renderCards();showToast('삭제되었습니다')};
+  document.getElementById('confirmMsg').textContent=`"${gData.find(d=>d.id===id).ko_term||gData.find(d=>d.id===id).en_term}" 각주를 삭제하시겠습니까?`;
+  confirmDialog.classList.add('show');
+}
+let modalMouseDownTarget=null;
+modal.addEventListener('mousedown',e=>{modalMouseDownTarget=e.target});
+modal.addEventListener('click',e=>{if(e.target===modal&&modalMouseDownTarget===modal)closeModal()});
+searchInput.addEventListener('input',()=>{clearBtn.classList.toggle('visible',searchInput.value.length>0);renderCards()});
+clearBtn.addEventListener('click',()=>{searchInput.value='';clearBtn.classList.remove('visible');searchInput.focus();renderCards()});
+document.querySelectorAll('.tag-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tag-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentTag=b.dataset.tag;renderCards()}));
 renderCards();
-</script>
 
+/* ======================== COPYRIGHT ======================== */
+const INITIAL_CR=[
+  {"id":1,"name":"Sentinel-2","provider":"ESA (Copernicus)","license":"CC BY-SA 3.0 IGO","attributions":[{"id":1,"label":"기본 표기","text":"Contains modified Copernicus Sentinel data [Year], processed by [Organization]"}],"note":"상업적 이용 가능. 원본 데이터 변형 시 동일 라이선스 적용 필요"},
+  {"id":2,"name":"Landsat 8/9","provider":"USGS / NASA","license":"Public Domain (U.S. Government Work)","attributions":[{"id":1,"label":"기본 표기","text":"Landsat-8/9 image courtesy of the U.S. Geological Survey"}],"note":"저작권 없음. 자유롭게 사용 가능하나 출처 표기 권장"},
+  {"id":3,"name":"MODIS","provider":"NASA","license":"Public Domain","attributions":[{"id":1,"label":"기본 표기","text":"We acknowledge the use of data products from the Land, Atmosphere Near real-time Capability for EOS (LANCE) system operated by NASA GSFC"}],"note":"Terra/Aqua 위성 탑재. 출처 표기 권장"},
+  {"id":4,"name":"Planet (PlanetScope)","provider":"Planet Labs","license":"상업 라이선스 (유료)","attributions":[{"id":1,"label":"기본 표기","text":"Image © [Year] Planet Labs PBC"}],"note":"유료 구매 데이터. 재배포 금지. 보고서 내 사용 시 라이선스 조건 확인 필요"},
+  {"id":5,"name":"Maxar (WorldView)","provider":"Maxar Technologies","license":"상업 라이선스 (유료)","attributions":[{"id":1,"label":"기본 표기","text":"© [Year] Maxar Technologies"}],"note":"고해상도 위성영상. 재배포 및 2차 가공물 배포 제한"},
+  {"id":6,"name":"CHIRPS","provider":"UC Santa Barbara / USGS","license":"Public Domain","attributions":[{"id":1,"label":"학술 논문 인용","text":"Funk, C. et al., 2015. The Climate Hazards Infrared Precipitation with Stations — a new environmental record for monitoring extremes. Scientific Data, 2, 150066"}],"note":"학술 논문 인용 형태로 표기"},
+  {"id":7,"name":"ERA5-Land","provider":"ECMWF (Copernicus CDS)","license":"Copernicus License","attributions":[{"id":1,"label":"기본 표기","text":"Contains modified Copernicus Climate Change Service Information [Year]"}],"note":"비상업·상업 모두 사용 가능. Copernicus 라이선스 조건 준수"},
+  {"id":8,"name":"Observer-1A (O1A)","provider":"Nara Space","license":"Nara Space 자체 라이선스","attributions":[{"id":1,"label":"기본 표기","text":"© [Year] Nara Space Technology Inc."}],"note":"사내 위성영상. 외부 배포 시 별도 승인 필요"}
+];
+
+const CRS='word-archive-cr';
+let crData=(JSON.parse(localStorage.getItem(CRS))||JSON.parse(JSON.stringify(INITIAL_CR))).map(item=>{
+  if(typeof item.attribution==='string'&&!item.attributions){item.attributions=[{id:1,label:'기본 표기',text:item.attribution}];delete item.attribution}
+  if(!item.attributions)item.attributions=[];
+  return item;
+});
+let openCrId=null,editingCrId=null;
+const crSearch=document.getElementById('crSearchInput'),crClear=document.getElementById('crClearBtn'),crList=document.getElementById('crCardList'),crCount=document.getElementById('crResultCount'),crModal=document.getElementById('crModal');
+
+function crPersist(){localStorage.setItem(CRS,JSON.stringify(crData))}
+function crNextId(){return crData.length?Math.max(...crData.map(d=>d.id))+1:1}
+function crMatch(item,q){if(!q)return true;const l=q.toLowerCase();return item.name.toLowerCase().includes(l)||item.provider.toLowerCase().includes(l)||(item.attributions||[]).some(a=>a.text.toLowerCase().includes(l)||a.label.toLowerCase().includes(l))}
+
+function toggleCr(id){openCrId=openCrId===id?null:id;document.querySelectorAll('#crCardList .cr-card').forEach(c=>c.classList.toggle('open',Number(c.dataset.crId)===openCrId))}
+
+function renderCr(){
+  const q=crSearch.value.trim();
+  const f=crData.filter(i=>crMatch(i,q));
+  if(!f.length){crList.innerHTML='<div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M8 11h6"/></svg><p>검색 결과가 없습니다</p></div>';crCount.textContent='0건';return}
+  crCount.textContent=q?`${f.length}건`:`총 ${f.length}건`;
+  crList.innerHTML=f.map(item=>{
+    const attrsHtml=(item.attributions||[]).map(attr=>{
+      const sa=attr.text.replace(/'/g,"\\'").replace(/\n/g,'\\n');
+      return `<div class="attr-item">
+        <div class="attr-label">${escapeHtml(attr.label||'표기문')}</div>
+        <div class="attr-row">
+          <div class="cr-copy-text">${escapeHtml(attr.text)}</div>
+          <div class="attr-actions">
+            <button class="copy-btn" onclick="event.stopPropagation();copyTo('${sa}',this,'복사')">${COPY_ICON} 복사</button>
+            <button class="edit-btn" title="수정" onclick="event.stopPropagation();openAttrModal(${item.id},${attr.id})">${EDIT}</button>
+            <button class="delete-btn" title="삭제" onclick="event.stopPropagation();deleteAttr(${item.id},${attr.id})">${TRASH}</button>
+          </div>
+        </div>
+      </div>`}).join('');
+    return `<div class="cr-card${openCrId===item.id?' open':''}" data-cr-id="${item.id}">
+      <div class="cr-summary" onclick="toggleCr(${item.id})">
+        <span class="chevron">${CHEVRON}</span>
+        <span class="cr-name">${hl(item.name,q)}</span>
+        <span class="cr-provider">${hl(item.provider,q)}</span>
+        <button class="edit-btn" title="수정" onclick="event.stopPropagation();openCrModal(${item.id})">${EDIT}</button>
+        <button class="delete-btn" title="삭제" onclick="event.stopPropagation();crConfirmDel(${item.id})">${TRASH}</button>
+      </div>
+      <div class="cr-detail"><div class="cr-detail-inner">
+        <div><div class="cr-field-label">라이선스</div><div class="cr-field-value">${escapeHtml(item.license)}</div></div>
+        <div>
+          <div class="cr-field-label">저작권 표기문</div>
+          <div class="attr-list">
+            ${attrsHtml}
+            <button class="attr-add-btn" onclick="event.stopPropagation();openAttrModal(${item.id},null)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> 표기문 추가</button>
+          </div>
+        </div>
+        ${item.note?`<div><div class="cr-field-label">비고</div><div class="cr-field-value" style="font-size:0.82rem">${escapeHtml(item.note)}</div></div>`:''}
+      </div></div>
+    </div>`}).join('');
+}
+
+function openCrModal(id){
+  editingCrId=id||null;
+  document.getElementById('crModalTitle').textContent=id?'저작권 정보 수정':'저작권 정보 추가';
+  document.getElementById('crFormSubmit').textContent=id?'저장':'추가';
+  if(id){const i=crData.find(d=>d.id===id);document.getElementById('crFormName').value=i.name;document.getElementById('crFormProvider').value=i.provider;document.getElementById('crFormLicense').value=i.license;document.getElementById('crFormNote').value=i.note||''}
+  else{['crFormName','crFormProvider','crFormLicense','crFormNote'].forEach(x=>document.getElementById(x).value='')}
+  crModal.classList.add('show');setTimeout(()=>document.getElementById('crFormName').focus(),100);
+}
+function closeCrModal(){crModal.classList.remove('show');editingCrId=null}
+function saveCrItem(){
+  const name=document.getElementById('crFormName').value.trim(),provider=document.getElementById('crFormProvider').value.trim(),license=document.getElementById('crFormLicense').value.trim(),note=document.getElementById('crFormNote').value.trim();
+  if(!name){showToast('저작물명을 입력해주세요');return}
+  if(editingCrId){Object.assign(crData.find(d=>d.id===editingCrId),{name,provider,license,note});showToast('수정되었습니다')}
+  else{crData.push({id:crNextId(),name,provider,license,note,attributions:[]});showToast('추가되었습니다')}
+  crPersist();closeCrModal();renderCr();
+}
+function crConfirmDel(id){
+  pendingAction=()=>{crData=crData.filter(d=>d.id!==id);if(openCrId===id)openCrId=null;crPersist();renderCr();showToast('삭제되었습니다')};
+  document.getElementById('confirmMsg').textContent=`"${crData.find(d=>d.id===id).name}" 저작권 정보를 삭제하시겠습니까?`;
+  confirmDialog.classList.add('show');
+}
+
+let crModalMouseDownTarget=null;
+crModal.addEventListener('mousedown',e=>{crModalMouseDownTarget=e.target});
+crModal.addEventListener('click',e=>{if(e.target===crModal&&crModalMouseDownTarget===crModal)closeCrModal()});
+crSearch.addEventListener('input',()=>{crClear.classList.toggle('visible',crSearch.value.length>0);renderCr()});
+crClear.addEventListener('click',()=>{crSearch.value='';crClear.classList.remove('visible');crSearch.focus();renderCr()});
+renderCr();
+
+/* ======================== ATTRIBUTION ======================== */
+let attrCtx={crId:null,attrId:null};
+const attrModal=document.getElementById('attrModal');
+
+function openAttrModal(crId,attrId){
+  attrCtx={crId,attrId};
+  document.getElementById('attrModalTitle').textContent=attrId?'표기문 수정':'표기문 추가';
+  document.getElementById('attrFormSubmit').textContent=attrId?'저장':'추가';
+  if(attrId){const item=crData.find(d=>d.id===crId),attr=(item.attributions||[]).find(a=>a.id===attrId);document.getElementById('attrFormLabel').value=attr.label||'';document.getElementById('attrFormText').value=attr.text}
+  else{document.getElementById('attrFormLabel').value='';document.getElementById('attrFormText').value=''}
+  attrModal.classList.add('show');setTimeout(()=>document.getElementById('attrFormLabel').focus(),100);
+}
+function closeAttrModal(){attrModal.classList.remove('show');attrCtx={crId:null,attrId:null}}
+function saveAttr(){
+  const label=document.getElementById('attrFormLabel').value.trim(),text=document.getElementById('attrFormText').value.trim();
+  if(!text){showToast('표기문을 입력해주세요');return}
+  const {crId,attrId}=attrCtx;
+  const item=crData.find(d=>d.id===crId);
+  if(!item.attributions)item.attributions=[];
+  if(attrId){Object.assign(item.attributions.find(a=>a.id===attrId),{label:label||'표기문',text});showToast('수정되었습니다')}
+  else{const nid=item.attributions.length?Math.max(...item.attributions.map(a=>a.id))+1:1;item.attributions.push({id:nid,label:label||'표기문',text});showToast('추가되었습니다')}
+  crPersist();closeAttrModal();openCrId=crId;renderCr();
+}
+function deleteAttr(crId,attrId){
+  const item=crData.find(d=>d.id===crId);
+  const attr=(item.attributions||[]).find(a=>a.id===attrId);
+  pendingAction=()=>{item.attributions=item.attributions.filter(a=>a.id!==attrId);crPersist();openCrId=crId;renderCr();showToast('삭제되었습니다')};
+  document.getElementById('confirmMsg').textContent=`"${attr?attr.label||'표기문':'표기문'}" 표기문을 삭제하시겠습니까?`;
+  confirmDialog.classList.add('show');
+}
+let attrModalMouseDownTarget=null;
+attrModal.addEventListener('mousedown',e=>{attrModalMouseDownTarget=e.target});
+attrModal.addEventListener('click',e=>{if(e.target===attrModal&&attrModalMouseDownTarget===attrModal)closeAttrModal()});
+
+/* ======================== GLOBAL KEYS ======================== */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(attrModal&&attrModal.classList.contains('show')){closeAttrModal();return}
+    if(modal.classList.contains('show')){closeModal();return}
+    if(crModal.classList.contains('show')){closeCrModal();return}
+    if(confirmDialog.classList.contains('show')){closeConfirm();return}
+  }
+});
+</script>
 </body>
 </html>
