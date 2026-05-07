@@ -103,6 +103,17 @@
     .attr-actions{display:flex;gap:0.2rem;flex-shrink:0;align-items:center;padding-top:0.25rem}
     .attr-add-btn{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;padding:0.35rem;border-radius:6px;border:1px dashed var(--border);background:transparent;font-size:0.75rem;cursor:pointer;color:var(--text2);transition:all 0.15s}
     .attr-add-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .cr-tags{display:flex;gap:0.25rem;flex-wrap:wrap;margin-top:0.15rem}
+    .cr-tag-chip{padding:0.1rem 0.45rem;border-radius:10px;font-size:0.6rem;font-weight:600;background:#e8f5f2;color:#065f46}
+    .tag-check-list{display:flex;flex-wrap:wrap;gap:0.4rem}
+    .tag-check-item{display:flex;align-items:center;gap:0.3rem;padding:0.3rem 0.6rem;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-size:0.8rem;color:var(--text2);transition:all 0.15s;user-select:none}
+    .tag-check-item:hover{border-color:var(--accent)}
+    .tag-check-item.checked{background:#e8f5f2;border-color:#065f46;color:#065f46}
+    .tag-check-item input{display:none}
+    .tag-add-row{display:flex;gap:0.4rem;margin-top:0.3rem}
+    .tag-add-row input{flex:1;padding:0.35rem 0.6rem;border:1px solid var(--border);border-radius:8px;font-size:0.8rem;outline:none}
+    .tag-add-row input:focus{border-color:var(--accent)}
+    .tag-add-row button{padding:0.35rem 0.6rem;border:none;background:var(--accent);color:#fff;border-radius:8px;font-size:0.75rem;font-weight:600;cursor:pointer}
 
     /* Modal */
     .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;padding:1rem}
@@ -209,7 +220,10 @@
 </div>
 
 <div class="controls">
-  <span class="result-count" id="crResultCount"></span>
+  <div class="controls-right">
+    <span class="result-count" id="crResultCount"></span>
+    <div class="tag-buttons" id="crTagButtons"></div>
+  </div>
   <button class="add-btn admin-only" onclick="openCrModal()">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> 추가
   </button>
@@ -255,6 +269,10 @@
       <div class="form-row">
         <div class="form-group"><label>저작물명</label><input type="text" id="crFormName" placeholder="예: Sentinel-2"></div>
         <div class="form-group"><label>제공기관</label><input type="text" id="crFormProvider" placeholder="예: ESA"></div>
+      </div>
+      <div class="form-group"><label>태그</label>
+        <div class="tag-check-list" id="crFormTags"></div>
+        <div class="tag-add-row admin-only"><input type="text" id="crNewTag" placeholder="새 태그 입력"><button onclick="addCrTag()">추가</button></div>
       </div>
       <div class="form-group"><label>라이선스</label><input type="text" id="crFormLicense" placeholder="예: CC BY-SA 3.0 IGO"></div>
       <div class="form-group"><label>비고</label><textarea id="crFormNote" placeholder="사용 조건, 주의사항 등"></textarea></div>
@@ -493,24 +511,59 @@ renderCards();
 
 /* ======================== COPYRIGHT ======================== */
 const INITIAL_CR=[
-  {"id":1,"name":"Sentinel-2","provider":"ESA (Copernicus)","license":"CC BY-SA 3.0 IGO","attributions":[{"id":1,"label":"기본 표기","text":"Contains modified Copernicus Sentinel data [Year], processed by [Organization]"}],"note":"상업적 이용 가능. 원본 데이터 변형 시 동일 라이선스 적용 필요"},
-  {"id":2,"name":"Landsat 8/9","provider":"USGS / NASA","license":"Public Domain (U.S. Government Work)","attributions":[{"id":1,"label":"기본 표기","text":"Landsat-8/9 image courtesy of the U.S. Geological Survey"}],"note":"저작권 없음. 자유롭게 사용 가능하나 출처 표기 권장"},
-  {"id":3,"name":"MODIS","provider":"NASA","license":"Public Domain","attributions":[{"id":1,"label":"기본 표기","text":"We acknowledge the use of data products from the Land, Atmosphere Near real-time Capability for EOS (LANCE) system operated by NASA GSFC"}],"note":"Terra/Aqua 위성 탑재. 출처 표기 권장"},
-  {"id":4,"name":"Planet (PlanetScope)","provider":"Planet Labs","license":"상업 라이선스 (유료)","attributions":[{"id":1,"label":"기본 표기","text":"Image © [Year] Planet Labs PBC"}],"note":"유료 구매 데이터. 재배포 금지. 보고서 내 사용 시 라이선스 조건 확인 필요"},
-  {"id":5,"name":"Maxar (WorldView)","provider":"Maxar Technologies","license":"상업 라이선스 (유료)","attributions":[{"id":1,"label":"기본 표기","text":"© [Year] Maxar Technologies"}],"note":"고해상도 위성영상. 재배포 및 2차 가공물 배포 제한"},
-  {"id":6,"name":"CHIRPS","provider":"UC Santa Barbara / USGS","license":"Public Domain","attributions":[{"id":1,"label":"학술 논문 인용","text":"Funk, C. et al., 2015. The Climate Hazards Infrared Precipitation with Stations — a new environmental record for monitoring extremes. Scientific Data, 2, 150066"}],"note":"학술 논문 인용 형태로 표기"},
-  {"id":7,"name":"ERA5-Land","provider":"ECMWF (Copernicus CDS)","license":"Copernicus License","attributions":[{"id":1,"label":"기본 표기","text":"Contains modified Copernicus Climate Change Service Information [Year]"}],"note":"비상업·상업 모두 사용 가능. Copernicus 라이선스 조건 준수"},
-  {"id":8,"name":"Observer-1A (O1A)","provider":"Nara Space","license":"Nara Space 자체 라이선스","attributions":[{"id":1,"label":"기본 표기","text":"© [Year] Nara Space Technology Inc."}],"note":"사내 위성영상. 외부 배포 시 별도 승인 필요"}
+  {"id":1,"name":"Sentinel-2","provider":"ESA (Copernicus)","license":"CC BY-SA 3.0 IGO","tags":["미디어","연구개발"],"attributions":[{"id":1,"label":"기본 표기","text":"Contains modified Copernicus Sentinel data [Year], processed by [Organization]"}],"note":"상업적 이용 가능. 원본 데이터 변형 시 동일 라이선스 적용 필요"},
+  {"id":2,"name":"Landsat 8/9","provider":"USGS / NASA","license":"Public Domain (U.S. Government Work)","tags":["미디어","연구개발"],"attributions":[{"id":1,"label":"기본 표기","text":"Landsat-8/9 image courtesy of the U.S. Geological Survey"}],"note":"저작권 없음. 자유롭게 사용 가능하나 출처 표기 권장"},
+  {"id":3,"name":"MODIS","provider":"NASA","license":"Public Domain","tags":["미디어","연구개발"],"attributions":[{"id":1,"label":"기본 표기","text":"We acknowledge the use of data products from the Land, Atmosphere Near real-time Capability for EOS (LANCE) system operated by NASA GSFC"}],"note":"Terra/Aqua 위성 탑재. 출처 표기 권장"},
+  {"id":4,"name":"Planet (PlanetScope)","provider":"Planet Labs","license":"상업 라이선스 (유료)","tags":["용역/판매"],"attributions":[{"id":1,"label":"기본 표기","text":"Image © [Year] Planet Labs PBC"}],"note":"유료 구매 데이터. 재배포 금지. 보고서 내 사용 시 라이선스 조건 확인 필요"},
+  {"id":5,"name":"Maxar (WorldView)","provider":"Maxar Technologies","license":"상업 라이선스 (유료)","tags":["용역/판매"],"attributions":[{"id":1,"label":"기본 표기","text":"© [Year] Maxar Technologies"}],"note":"고해상도 위성영상. 재배포 및 2차 가공물 배포 제한"},
+  {"id":6,"name":"CHIRPS","provider":"UC Santa Barbara / USGS","license":"Public Domain","tags":["연구개발"],"attributions":[{"id":1,"label":"학술 논문 인용","text":"Funk, C. et al., 2015. The Climate Hazards Infrared Precipitation with Stations — a new environmental record for monitoring extremes. Scientific Data, 2, 150066"}],"note":"학술 논문 인용 형태로 표기"},
+  {"id":7,"name":"ERA5-Land","provider":"ECMWF (Copernicus CDS)","license":"Copernicus License","tags":["미디어","연구개발"],"attributions":[{"id":1,"label":"기본 표기","text":"Contains modified Copernicus Climate Change Service Information [Year]"}],"note":"비상업·상업 모두 사용 가능. Copernicus 라이선스 조건 준수"},
+  {"id":8,"name":"Observer-1A (O1A)","provider":"Nara Space","license":"Nara Space 자체 라이선스","tags":["용역/판매"],"attributions":[{"id":1,"label":"기본 표기","text":"© [Year] Nara Space Technology Inc."}],"note":"사내 위성영상. 외부 배포 시 별도 승인 필요"}
 ];
 
 const CRS='word-archive-cr';
 let crData=(JSON.parse(localStorage.getItem(CRS))||JSON.parse(JSON.stringify(INITIAL_CR))).map(item=>{
   if(typeof item.attribution==='string'&&!item.attributions){item.attributions=[{id:1,label:'기본 표기',text:item.attribution}];delete item.attribution}
   if(!item.attributions)item.attributions=[];
+  if(!item.tags)item.tags=[];
   return item;
 });
-let openCrId=null,editingCrId=null;
+let openCrId=null,editingCrId=null,currentCrTag='all';
 const crSearch=document.getElementById('crSearchInput'),crClear=document.getElementById('crClearBtn'),crList=document.getElementById('crCardList'),crCount=document.getElementById('crResultCount'),crModal=document.getElementById('crModal');
+
+const CR_TAGS_KEY='word-archive-cr-tags';
+const DEFAULT_CR_TAGS=['미디어','용역/판매','연구개발'];
+let crTagList=JSON.parse(localStorage.getItem(CR_TAGS_KEY))||[...DEFAULT_CR_TAGS];
+function crTagsPersist(){localStorage.setItem(CR_TAGS_KEY,JSON.stringify(crTagList))}
+
+function renderCrTagButtons(){
+  const cont=document.getElementById('crTagButtons');
+  cont.innerHTML=`<button class="tag-btn${currentCrTag==='all'?' active':''}" data-crtag="all">전체</button>`+
+    crTagList.map(t=>`<button class="tag-btn${currentCrTag===t?' active':''}" data-crtag="${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('');
+  cont.querySelectorAll('.tag-btn').forEach(b=>b.addEventListener('click',()=>{
+    currentCrTag=b.dataset.crtag;renderCrTagButtons();renderCr();
+  }));
+}
+
+function renderCrFormTags(selected){
+  const cont=document.getElementById('crFormTags');
+  cont.innerHTML=crTagList.map(t=>{
+    const checked=selected.includes(t);
+    return `<label class="tag-check-item${checked?' checked':''}"><input type="checkbox" value="${escapeHtml(t)}"${checked?' checked':''}>${escapeHtml(t)}</label>`;
+  }).join('');
+  cont.querySelectorAll('.tag-check-item input').forEach(cb=>{
+    cb.addEventListener('change',()=>{cb.parentElement.classList.toggle('checked',cb.checked)});
+  });
+}
+function getSelectedCrTags(){return Array.from(document.querySelectorAll('#crFormTags input:checked')).map(cb=>cb.value)}
+function addCrTag(){
+  const inp=document.getElementById('crNewTag'),v=inp.value.trim();
+  if(!v){return}
+  if(crTagList.includes(v)){showToast('이미 존재하는 태그입니다');return}
+  crTagList.push(v);crTagsPersist();
+  renderCrFormTags(getSelectedCrTags().concat(v));
+  renderCrTagButtons();inp.value='';showToast('태그가 추가되었습니다');
+}
 
 function crPersist(){localStorage.setItem(CRS,JSON.stringify(crData))}
 function crNextId(){return crData.length?Math.max(...crData.map(d=>d.id))+1:1}
@@ -520,9 +573,9 @@ function toggleCr(id){openCrId=openCrId===id?null:id;document.querySelectorAll('
 
 function renderCr(){
   const q=crSearch.value.trim();
-  const f=crData.filter(i=>crMatch(i,q));
+  const f=crData.filter(i=>crMatch(i,q)&&(currentCrTag==='all'||(i.tags||[]).includes(currentCrTag)));
   if(!f.length){crList.innerHTML='<div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M8 11h6"/></svg><p>검색 결과가 없습니다</p></div>';crCount.textContent='0건';return}
-  crCount.textContent=q?`${f.length}건`:`총 ${f.length}건`;
+  crCount.textContent=q||currentCrTag!=='all'?`${f.length}건`:`총 ${f.length}건`;
   crList.innerHTML=f.map(item=>{
     const attrsHtml=(item.attributions||[]).map(attr=>{
       const sa=attr.text.replace(/'/g,"\\'").replace(/\n/g,'\\n');
@@ -541,6 +594,7 @@ function renderCr(){
       <div class="cr-summary" onclick="toggleCr(${item.id})">
         <span class="chevron">${CHEVRON}</span>
         <span class="cr-name">${hl(item.name,q)}</span>
+        ${(item.tags||[]).length?`<span class="cr-tags">${item.tags.map(t=>`<span class="cr-tag-chip">${escapeHtml(t)}</span>`).join('')}</span>`:''}
         <span class="cr-provider">${hl(item.provider,q)}</span>
         <button class="edit-btn admin-only" title="수정" onclick="event.stopPropagation();openCrModal(${item.id})">${EDIT}</button>
         <button class="delete-btn admin-only" title="삭제" onclick="event.stopPropagation();crConfirmDel(${item.id})">${TRASH}</button>
@@ -563,16 +617,16 @@ function openCrModal(id){
   editingCrId=id||null;
   document.getElementById('crModalTitle').textContent=id?'저작권 정보 수정':'저작권 정보 추가';
   document.getElementById('crFormSubmit').textContent=id?'저장':'추가';
-  if(id){const i=crData.find(d=>d.id===id);document.getElementById('crFormName').value=i.name;document.getElementById('crFormProvider').value=i.provider;document.getElementById('crFormLicense').value=i.license;document.getElementById('crFormNote').value=i.note||''}
-  else{['crFormName','crFormProvider','crFormLicense','crFormNote'].forEach(x=>document.getElementById(x).value='')}
+  if(id){const i=crData.find(d=>d.id===id);document.getElementById('crFormName').value=i.name;document.getElementById('crFormProvider').value=i.provider;document.getElementById('crFormLicense').value=i.license;document.getElementById('crFormNote').value=i.note||'';renderCrFormTags(i.tags||[])}
+  else{['crFormName','crFormProvider','crFormLicense','crFormNote'].forEach(x=>document.getElementById(x).value='');renderCrFormTags([])}
   crModal.classList.add('show');setTimeout(()=>document.getElementById('crFormName').focus(),100);
 }
 function closeCrModal(){crModal.classList.remove('show');editingCrId=null}
 function saveCrItem(){
-  const name=document.getElementById('crFormName').value.trim(),provider=document.getElementById('crFormProvider').value.trim(),license=document.getElementById('crFormLicense').value.trim(),note=document.getElementById('crFormNote').value.trim();
+  const name=document.getElementById('crFormName').value.trim(),provider=document.getElementById('crFormProvider').value.trim(),license=document.getElementById('crFormLicense').value.trim(),note=document.getElementById('crFormNote').value.trim(),tags=getSelectedCrTags();
   if(!name){showToast('저작물명을 입력해주세요');return}
-  if(editingCrId){Object.assign(crData.find(d=>d.id===editingCrId),{name,provider,license,note});showToast('수정되었습니다')}
-  else{crData.push({id:crNextId(),name,provider,license,note,attributions:[]});showToast('추가되었습니다')}
+  if(editingCrId){Object.assign(crData.find(d=>d.id===editingCrId),{name,provider,license,note,tags});showToast('수정되었습니다')}
+  else{crData.push({id:crNextId(),name,provider,license,note,tags,attributions:[]});showToast('추가되었습니다')}
   crPersist();closeCrModal();renderCr();
 }
 function crConfirmDel(id){
@@ -586,7 +640,8 @@ crModal.addEventListener('mousedown',e=>{crModalMouseDownTarget=e.target});
 crModal.addEventListener('click',e=>{if(e.target===crModal&&crModalMouseDownTarget===crModal)closeCrModal()});
 crSearch.addEventListener('input',()=>{crClear.classList.toggle('visible',crSearch.value.length>0);renderCr()});
 crClear.addEventListener('click',()=>{crSearch.value='';crClear.classList.remove('visible');crSearch.focus();renderCr()});
-renderCr();
+document.getElementById('crNewTag').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCrTag()}});
+renderCrTagButtons();renderCr();
 
 /* ======================== ATTRIBUTION ======================== */
 let attrCtx={crId:null,attrId:null};
